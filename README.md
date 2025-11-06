@@ -14,8 +14,6 @@ This ID will uniquely identify all files, plots, and outputs from your run.
 
 Below is the step-by-step workflow for running one complete simulation:
 
----
-
 ###  Src Folder
 
 #### Step 1 — Generate Simulation ID
@@ -43,14 +41,14 @@ Open the file that matches the plot type you want (e.g, emissions_plot_settings.
 #### Step 5 - Run simulation
 * run `main.py`
 
-
+---
 
 ### Output folder
 #### Step 6 - View your results
 * Each simulation run will have its own output folder, named using your simulation ID.
 * Inside, you’ll find plots, data summaries, and other generated outputs.
 
-
+---
 
 # User Settings
 
