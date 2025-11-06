@@ -12,7 +12,8 @@ Every simulation starts by generating a **simulation ID** using the `get_sim_id.
 You **don’t need to modify** this file — just run it and copy the printed output.  
 This ID will uniquely identify all files, plots, and outputs from your run.
 
-Below is the step-by-step workflow for running **one complete simulation**:
+Below is the step-by-step workflow for running one complete simulation:
+
 ---
 
 ###  Src Folder
@@ -20,7 +21,7 @@ Below is the step-by-step workflow for running **one complete simulation**:
 #### Step 1 — Generate Simulation ID
  * Run `get_sim_id.py`
 
-
+---
 ###  Input Folder
 #### Step 2 — Add GenX Results
 * Copy the GenX results you want to analyze into the GenX_results folder
@@ -36,10 +37,16 @@ Below is the step-by-step workflow for running **one complete simulation**:
 * Go to the plot_settings folder.
 Open the file that matches the plot type you want (e.g, emissions_plot_settings.json).
 * Adjust any parameters for your analysis.
+---
+
+### Src Folder 
+#### Step 5 - Run simulation
+* run `main.py`
+
 
 
 ### Output folder
-#### Step 5 - View your results
+#### Step 6 - View your results
 * Each simulation run will have its own output folder, named using your simulation ID.
 * Inside, you’ll find plots, data summaries, and other generated outputs.
 
