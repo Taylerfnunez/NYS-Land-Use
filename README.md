@@ -11,7 +11,7 @@ There are three main folders in this repo:
 Every simulation starts by generating a **simulation ID** using the `get_sim_id.py` file.  
 You **don’t need to modify** this file — just run it and copy the printed output.  
 This ID will uniquely identify all files, plots, and outputs from your run.
-
+---
 Below is the step-by-step workflow for running one complete simulation:
 
 ###  Src Folder
