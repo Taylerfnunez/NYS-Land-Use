@@ -3,7 +3,9 @@
     "dpi": 150,
     "title_all_zones": "Emissions by Zone ",
     "x_label_all_zones": "Time",
-    "y_label_all_zones": "Emissions (MW)",
-    "title_by_zone": "Emissions by Zone"
+    "y_label_all_zones": "Emissions",
+    "title_by_zone": "Emissions by Zone",
+    "x_label_by_zone": "Time",
+    "y_label_by_zone": "Emissions"
    
  }
