@@ -5,6 +5,6 @@
     "emissions_plot": 1,
     "demand_plot": 1, 
     "capacity_plot": 0, 
-    "zone_aggregation_method": 2
+    "zone_aggregation_method": 0
    
  }
