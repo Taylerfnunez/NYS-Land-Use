@@ -35,7 +35,7 @@ Open the file that matches the plot type you want (e.g, emissions.json).
 
 ### Output folder
 #### Step 5 - View your results
-* Each simulation run will have its own output folder, named using your simulation ID.
+* Each simulation run will have its own output folder, named after the date and time you ran the main.py.
 * Inside, you’ll find plots, data summaries, and other generated outputs.
 
 ---
