@@ -3,6 +3,7 @@ This repo is meant to store all of our analyses and figures for the NY Land Use 
 
 # Simulation Workflow
 There are three main folders in this repo: 
+- final_project
 - input
 - output
 - src
@@ -39,6 +40,9 @@ Open the file that matches the plot type you want (e.g, emissions.json).
 * Inside, you’ll find plots, data summaries, and other generated outputs.
 
 ---
+
+###  Final Project Folder
+The final_project folder will contain any other additional content you would like to save as it pertains to this project. This can include presentations, data, reports, sub-anaylses, images, etc. 
 
 # User Settings
 
