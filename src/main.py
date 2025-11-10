@@ -10,7 +10,6 @@ import datetime
 
 
 if __name__ == "__main__":
-    print("This function is running")
 
  # Load inputs
     
@@ -48,7 +47,6 @@ if __name__ == "__main__":
 
 
 # Run simulation and save results
-
 
    #################################
    ### Save Simulation Results ###
