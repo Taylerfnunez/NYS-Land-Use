@@ -38,11 +38,14 @@ if __name__ == "__main__":
     #################################
     ### Load CSV files ###
     #################################
-    emissions_csv = pd.read_csv("input/GenX_results/20250611_test/emissions.csv")
+
+    # Get the subfolder name from the JSON key
+    genx_results_subfolder = simulation_settings["GenX_results_folder"]
+
+    emissions_csv_path = os.path.join("input", "GenX_results", genx_results_subfolder, "emissions.csv")
+    emissions_csv = pd.read_csv(emissions_csv_path)
 
 
-
- 
 
 # Run simulation and save results
 
