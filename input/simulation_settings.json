@@ -1,5 +1,7 @@
 {
-    "simulation_id": 11062025,
+    "GenX_results_file": 11062025,
+    "save_path": "./output",
+    "power_plot": 1,
     "emissions_plot": 1,
     "demand_plot": 1, 
     "capacity_plot": 0, 
