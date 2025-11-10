@@ -1,0 +1,9 @@
+{
+    "fig_size": [12, 6],
+    "dpi": 150,
+    "title_all_zones": "Emissions by Zone ",
+    "x_label_all_zones": "Time",
+    "y_label_all_zones": "Emissions (MW)",
+    "title_by_zone": "Emissions by Zone"
+   
+ }
