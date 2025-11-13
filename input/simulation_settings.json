@@ -5,6 +5,7 @@
     "demand_plot": 1, 
     "capacity_plot": 0, 
     "power_plot": 1,
-    "zone_aggregation_method": 0
+    "zone_aggregation_method": 0, 
+    "Simulation commens": " Running p1, zero emsissions"
    
  }
