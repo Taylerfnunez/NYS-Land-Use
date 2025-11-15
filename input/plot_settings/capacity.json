@@ -1,0 +1,11 @@
+{
+    "fig_size": [12, 6],
+    "dpi": 150,
+    "title_all_zones": "Capacity All Zone",
+    "x_label_all_zones": "Time",
+    "y_label_all_zones": "Capacity (MW)",
+    "title_by_zone": "Capacity by Zone",
+    "x_label_by_zone": "Time",
+    "y_label_by_zone": "Capacity (MW)"
+   
+ }
