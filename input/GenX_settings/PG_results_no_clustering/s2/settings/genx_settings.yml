@@ -1,7 +1,7 @@
 NetworkExpansion: 1
 ParameterScale: 0
 EnergyShareRequirement: 1
-TimeDomainReduction: 0
+TimeDomainReduction: 1
 Trans_Loss_Segments: 1
 CapacityReserveMargin: 1
 StorageLosses: 0
