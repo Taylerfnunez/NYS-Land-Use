@@ -104,21 +104,38 @@ def copy_genx_results_to_output(case_dir: Path, scenario_save_dir: Path):
 
 def write_metadata(simulation_settings, timestamp_root: Path, scenario_run_settings: dict):
     """
-    Write a metadata.txt file containing:
-    - the full contents of simulation_settings.json
-    - the contents of run_settings.yml for each scenario (from the OUTPUT folders)
+    Write a human-readable metadata.txt file containing:
+    - simulation settings pretty-printed
+    - run_settings.yml contents for each scenario rendered as readable blocks
     """
+
     metadata_path = timestamp_root / "metadata.txt"
 
-    metadata = {
-        "simulation_settings": simulation_settings,
-        "scenario_run_settings": scenario_run_settings,  # {scenario: raw YAML text}
-    }
-
     with metadata_path.open("w") as f:
-        json.dump(metadata, f, indent=2)
+
+        # -------------------------
+        # Write simulation settings
+        # -------------------------
+        f.write("=== Simulation Settings ===\n")
+        f.write(json.dumps(simulation_settings, indent=2))
+        f.write("\n\n")
+
+        # -------------------------
+        # Write scenario YAML blocks
+        # -------------------------
+        f.write("=== Scenario Run Settings ===\n\n")
+
+        for scen, yaml_text in scenario_run_settings.items():
+            f.write(f"{scen}:\n")
+
+            # Prefix each line with indentation + hyphen
+            for line in yaml_text.strip().splitlines():
+                f.write(f"    - {line}\n")
+
+            f.write("\n")  # blank line after each scenario
 
     print(f"Metadata written to {metadata_path}")
+
 
 
 def main():
