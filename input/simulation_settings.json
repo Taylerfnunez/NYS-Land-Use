@@ -1,6 +1,6 @@
 {
     "simulation_comments": "This is a test. Checking whether code works if run_GenX is set to 0",
-    "run_genx": 1, 
+    "run_genx": 0, 
     "genx_outputs_dir": "input/genx/genx_outputs/test1",
     "save_path": "output",
     "generate_emissions_plot": 1,
