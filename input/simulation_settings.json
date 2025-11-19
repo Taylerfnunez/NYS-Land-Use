@@ -1,5 +1,5 @@
 {
-    "simulation_comments": "This is a test run. Goal: Check whether the metadata file contains content from run_settings.yml produced by GenX",
+    "simulation_comments": "Adding power plots to simulation. This test run check output.",
     "run_genx": 1, 
     "genx_outputs_dir": "input/genx/genx_outputs/test1",
     "save_path": "output",
@@ -11,7 +11,7 @@
     "julia_executable": "/Users/tedwhite15/.juliaup/bin/Julia",
     "project": "/Users/tedwhite15/.julia/environments/genx", 
     "genx_inputs_dir": "input/genx/genx_inputs/test2",
-    "scenarios": ["s1", "s2"],
+    "scenarios": ["s1"],
     "emissions_file": "results/emissions.csv"
   }
     
