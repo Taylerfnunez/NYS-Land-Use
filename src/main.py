@@ -80,7 +80,7 @@ def copy_genx_results_to_output(case_dir: Path, scenario_save_dir: Path):
       - extra_outputs/
       - any other output CSVs GenX writes.
     """
-    ignore_dirs = {"system", "settings", "resources", "policies", "TDR_results"}
+    ignore_dirs = {"system", "settings", "resources", "policies"}
 
     for item in case_dir.iterdir():
         # Skip known input-like directories
@@ -100,6 +100,18 @@ def copy_genx_results_to_output(case_dir: Path, scenario_save_dir: Path):
         else:
             # symlinks or weird stuff – skip
             print(f"Skipping non-regular item: {item}")
+
+
+def write_metadata(simulation_settings, timestamp_root: Path):
+    """
+    Write a metadata.txt file containing the contents of simulation_settings.json
+    into the timestamped run directory.
+    """
+    metadata_path = timestamp_root / "metadata.txt"
+    with metadata_path.open("w") as f:
+        # Pretty-print the JSON so it's easy to read / diff
+        json.dump(simulation_settings, f, indent=2)
+    print(f"Metadata written to {metadata_path}")
 
 
 def main():
@@ -122,6 +134,9 @@ def main():
     base_output_root = project_root / simulation_settings["save_path"]
     timestamp_root = base_output_root / sim_timestamp
     os.makedirs(timestamp_root, exist_ok=True)
+
+    # 4b) Write metadata for this run
+    write_metadata(simulation_settings, timestamp_root)
 
     # 5) Determine where to read scenario outputs from
     genx_cfg = simulation_settings["genx"]
@@ -161,6 +176,16 @@ def main():
         # Copy all outputs for this scenario into the output structure
         print(f"Copying results from {case_dir} -> {scenario_save_dir}")
         copy_genx_results_to_output(case_dir, scenario_save_dir)
+
+        # ---- DELETE ORIGINAL OUTPUT FOLDERS ----
+        genx_output_dirs = ["results", "extra_outputs","TDR_results"]
+        
+        for folder in genx_output_dirs:
+            folder_path = case_dir / folder
+            if folder_path.exists() and folder_path.is_dir():
+                print(f"Deleting GenX output folder: {folder_path}")
+                shutil.rmtree(folder_path)
+
 
         # Load emissions from the COPIED location
         emissions_csv_path = scenario_save_dir / emissions_rel_path
