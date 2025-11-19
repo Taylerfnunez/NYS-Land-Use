@@ -144,7 +144,7 @@ def main():
         emissions_csv = pd.read_csv(emissions_csv_path)
 
         # 6) Create plots (saved in the same scenario folder)
-        if simulation_settings.get("emissions_plot", 0) == 1:
+        if simulation_settings.get("generate_emissions_plot", 0) == 1:
             sim_id = f"{sim_timestamp}_{scen}"
             print(f"Creating emissions plot for {scen}...")
             emissions_plot(
