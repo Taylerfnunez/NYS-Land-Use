@@ -177,6 +177,13 @@ def main():
         print(f"Copying results from {case_dir} -> {scenario_save_dir}")
         copy_genx_results_to_output(case_dir, scenario_save_dir)
 
+        #Delete results folder in input/genx/genx_inputs/<specified genx settings folder>/<scenario>
+        results_dir = case_dir / "results"
+        if results_dir.exists() and results_dir.is_dir():
+            print(f"Deleting original results folder: {results_dir}")
+            shutil.rmtree(results_dir)
+
+
         # Load emissions from the COPIED location
         emissions_csv_path = scenario_save_dir / emissions_rel_path
         print(f"Loading emissions from {emissions_csv_path}")
