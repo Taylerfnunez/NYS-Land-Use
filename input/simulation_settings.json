@@ -3,6 +3,7 @@
     "save_path": "output",
     "sim_comments": "This is a test.",
     "emissions_plot": 1,
+    "zone_aggregation_method": 0, 
     "genx": {
     "julia_executable": "/Users/tedwhite15/.juliaup/bin/Julia",
     "project": "/Users/tedwhite15/.julia/environments/genx", 
