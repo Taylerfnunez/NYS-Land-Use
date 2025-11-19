@@ -84,7 +84,7 @@ def copy_genx_results_to_output(case_dir: Path, scenario_save_dir: Path):
       - extra_outputs/
       - any other output CSVs GenX writes.
     """
-    ignore_dirs = {"system", "settings", "resources", "policies"}
+    ignore_dirs = {"system", "settings", "resources", "policies", "TDR_results", "extra_outputs", "powergenome_case_settings.yml"}
 
     for item in case_dir.iterdir():
         if item.name in ignore_dirs:
