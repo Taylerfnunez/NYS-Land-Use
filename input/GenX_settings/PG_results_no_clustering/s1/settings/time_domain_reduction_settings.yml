@@ -1,14 +1,14 @@
 IterativelyAddPeriods: 1
 ExtremePeriods: 1
 UseExtremePeriods: 1
-MinPeriods: 48
-MaxPeriods: 48
+MinPeriods: 24
+MaxPeriods: 24
 DemandWeight: 1
 ClusterFuelPrices: 1
 nReps: 100
 MultiStageConcatenate: 0
 Threshold: 0.05
-TimestepsPerRepPeriod: 168
+TimestepsPerRepPeriod: 24
 IterateMethod: "cluster"
 ScalingMethod: "S"
 ClusterMethod: "kmeans"
