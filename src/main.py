@@ -6,7 +6,7 @@ from pathlib import Path
 import datetime
 import numpy as np
 import pandas as pd
-from plot_functions import emissions_plot
+from plot_functions import emissions_plot, power_plot 
 
 
 def load_settings():
@@ -23,13 +23,30 @@ def load_settings():
 
 def load_plot_settings(project_root):
     """
-    Load plot settings (currently only emissions.json).
+    Load plot settings (emissions.json and power.json).
+    Returns a dict with keys "emissions" and "power".
     """
     plot_settings_path = project_root / "input" / "plot_settings"
+
+    # Emissions plot settings
     emissions_json_path = plot_settings_path / "emissions.json"
     with emissions_json_path.open("r") as f:
         emissions_settings = json.load(f)
-    return emissions_settings
+
+    # Power plot settings
+    power_json_path = plot_settings_path / "power.json"
+    if power_json_path.exists():
+        with power_json_path.open("r") as f:
+            power_settings = json.load(f)
+    else:
+        # Fallback empty dict if power.json is not present
+        print(f"Warning: {power_json_path} not found. Power plots may fail.")
+        power_settings = {}
+
+    return {
+        "emissions": emissions_settings,
+        "power": power_settings,
+    }
 
 
 def run_genx_cases(settings, project_root):
@@ -76,11 +93,12 @@ def copy_genx_results_to_output(case_dir: Path, scenario_save_dir: Path):
       'system', 'settings', 'resources', 'policies', 'TDR_results'.
     - That way we grab outputs like:
       - emissions.csv
-      - results.csv
+      - power.csv
+      - results/
       - extra_outputs/
       - any other output CSVs GenX writes.
     """
-    ignore_dirs = {"system", "settings", "resources", "policies"}
+    ignore_dirs = {"system", "settings", "resources", "policies", "TDR_results"}
 
     for item in case_dir.iterdir():
         # Skip known input-like directories
@@ -102,16 +120,30 @@ def copy_genx_results_to_output(case_dir: Path, scenario_save_dir: Path):
             print(f"Skipping non-regular item: {item}")
 
 
-def write_metadata(simulation_settings, timestamp_root: Path):
+def write_metadata(simulation_settings, timestamp_root: Path, scenario_run_settings: dict):
     """
-    Write a metadata.txt file containing the contents of simulation_settings.json
-    into the timestamped run directory.
+    Write a human-readable metadata.txt file containing:
+    - simulation settings pretty-printed
+    - run_settings.yml contents for each scenario rendered as readable blocks
     """
     metadata_path = timestamp_root / "metadata.txt"
+
     with metadata_path.open("w") as f:
-        # Pretty-print the JSON so it's easy to read / diff
-        json.dump(simulation_settings, f, indent=2)
+        # Simulation settings
+        f.write("=== Simulation Settings ===\n")
+        f.write(json.dumps(simulation_settings, indent=2))
+        f.write("\n\n")
+
+        # Scenario run_settings.yml contents
+        f.write("=== Scenario Run Settings ===\n\n")
+        for scen, yaml_text in scenario_run_settings.items():
+            f.write(f"{scen}:\n")
+            for line in yaml_text.strip().splitlines():
+                f.write(f"    - {line}\n")
+            f.write("\n")
+
     print(f"Metadata written to {metadata_path}")
+
 
 
 def main():
@@ -127,7 +159,9 @@ def main():
         print("run_genx = 0 → Skipping GenX runs and using existing outputs.")
 
     # 3) Load plot settings
-    emissions_settings = load_plot_settings(project_root)
+    plot_settings = load_plot_settings(project_root)
+    emissions_settings = plot_settings["emissions"]
+    power_settings = plot_settings["power"]
 
     # 4) Make a timestamped parent directory in output/
     sim_timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
@@ -135,19 +169,15 @@ def main():
     timestamp_root = base_output_root / sim_timestamp
     os.makedirs(timestamp_root, exist_ok=True)
 
-    # 4b) Write metadata for this run
-    write_metadata(simulation_settings, timestamp_root)
-
     # 5) Determine where to read scenario outputs from
     genx_cfg = simulation_settings["genx"]
     scenarios = genx_cfg["scenarios"]
-    emissions_rel_path = Path(genx_cfg.get("emissions_file", "emissions.csv"))
+    emissions_rel_path = Path(genx_cfg.get("emissions_file", "results/emissions.csv"))
+    power_rel_path = Path(genx_cfg.get("power_file", "results/power.csv"))
 
     if run_genx_flag == 1:
-        # When we just ran GenX, outputs are in the case directories
         base_case_dir = project_root / genx_cfg["genx_inputs_dir"]
     else:
-        # When not running GenX, use precomputed outputs
         genx_outputs_dir_rel = simulation_settings.get("genx_outputs_dir")
         if genx_outputs_dir_rel is None:
             raise KeyError(
@@ -155,7 +185,10 @@ def main():
             )
         base_case_dir = project_root / genx_outputs_dir_rel
 
-    # 6) Loop over scenarios: copy results & create plots
+    # We'll collect run_settings.yml contents here, keyed by scenario
+    scenario_run_settings = {}
+
+    # 6) Loop over scenarios: copy results, delete original outputs, create plots
     for scen in scenarios:
         print(f"\n=== Processing scenario {scen} ===")
 
@@ -173,36 +206,77 @@ def main():
         scenario_save_dir = timestamp_root / scen
         os.makedirs(scenario_save_dir, exist_ok=True)
 
+        # --- NEW: create plot subdirectories ---
+        plots_root = scenario_save_dir / "plots"
+        emissions_plot_dir = plots_root / "emissions"
+        power_plot_dir = plots_root / "power"
+        os.makedirs(emissions_plot_dir, exist_ok=True)
+        os.makedirs(power_plot_dir, exist_ok=True)
+        # --------------------------------------
+
         # Copy all outputs for this scenario into the output structure
         print(f"Copying results from {case_dir} -> {scenario_save_dir}")
         copy_genx_results_to_output(case_dir, scenario_save_dir)
 
-        # ---- DELETE ORIGINAL OUTPUT FOLDERS ----
-        genx_output_dirs = ["results", "extra_outputs","TDR_results"]
-        
+        # Delete original GenX output folders in the case directory
+        genx_output_dirs = [
+            "results",
+            "extra_outputs",
+            "TDR_results",
+            "capacity_expansion_results",
+            "operational_results",
+        ]
         for folder in genx_output_dirs:
             folder_path = case_dir / folder
             if folder_path.exists() and folder_path.is_dir():
                 print(f"Deleting GenX output folder: {folder_path}")
                 shutil.rmtree(folder_path)
 
-
-        # Load emissions from the COPIED location
+        # Load emissions and power from the COPIED location
         emissions_csv_path = scenario_save_dir / emissions_rel_path
         print(f"Loading emissions from {emissions_csv_path}")
         emissions_csv = pd.read_csv(emissions_csv_path)
 
-        # 7) Create plots (saved in the same scenario folder)
+        power_csv_path = scenario_save_dir / power_rel_path
+        print(f"Loading power from {power_csv_path}")
+        power_csv = pd.read_csv(power_csv_path)
+
+        # Read run_settings.yml from the OUTPUT folder for this scenario
+        run_settings_path = scenario_save_dir / "results" / "run_settings.yml"
+        if run_settings_path.exists():
+            print(f"Reading run_settings.yml for scenario '{scen}' from {run_settings_path}")
+            with run_settings_path.open("r") as f:
+                scenario_run_settings[scen] = f.read()
+        else:
+            print(
+                f"Warning: run_settings.yml not found for scenario '{scen}' at {run_settings_path}"
+            )
+
+        # 7) Create plots (saved in the *subfolders* now)
+        sim_id = f"{sim_timestamp}_{scen}"
+
         if simulation_settings.get("generate_emissions_plot", 0) == 1:
-            sim_id = f"{sim_timestamp}_{scen}"
             print(f"Creating emissions plot for {scen}...")
             emissions_plot(
                 emissions_csv,
                 simulation_settings,
                 emissions_settings,
-                scenario_save_dir,
+                emissions_plot_dir,  # <-- save here
                 sim_id,
             )
+
+        if simulation_settings.get("generate_power_plot", 0) == 1:
+            print(f"Creating power plot for {scen}...")
+            power_plot(
+                power_csv,
+                simulation_settings,
+                power_settings,
+                power_plot_dir,      # <-- save here
+                sim_id,
+            )
+
+    # 8) Write metadata for this run
+    write_metadata(simulation_settings, timestamp_root, scenario_run_settings)
 
     print(f"\nAll scenarios complete. Results in: {timestamp_root}")
 
