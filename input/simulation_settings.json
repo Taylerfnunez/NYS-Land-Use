@@ -1,7 +1,7 @@
 {
     "simulation_comments": "This is a test. Checking whether code works if run_GenX is set to 0",
     "run_genx": 1, 
-    "genx_results": "input/genx_settings/genx_results/test1",
+    "genx_outputs_dir": "input/genx_settings/genx_outputs/test1",
     "save_path": "output",
     "generate_emissions_plot": 1,
     "generate_capacity_plot": 0, 
@@ -10,7 +10,7 @@
     "genx": {
     "julia_executable": "/Users/tedwhite15/.juliaup/bin/Julia",
     "project": "/Users/tedwhite15/.julia/environments/genx", 
-    "base_results_dir": "input/GenX_settings/test2",
+    "genx_inputs_dir": "input/genx_settings/genx_inputs/test2",
     "scenarios": ["s1", "s2", "s3"],
     "emissions_file": "results/emissions.csv"
   }

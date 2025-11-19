@@ -49,11 +49,11 @@ def run_genx_cases(settings, project_root):
 
     julia_exe = genx_cfg["julia_executable"]
     julia_project = genx_cfg["project"]
-    base_results_dir = project_root / genx_cfg["base_results_dir"]
+    genx_inputs_dir = project_root / genx_cfg["genx_inputs_dir"]
     scenarios = genx_cfg["scenarios"]
 
     for scen in scenarios:
-        case_dir = (base_results_dir / scen).resolve()
+        case_dir = (genx_inputs_dir / scen).resolve()
         print("\n==============================")
         print(f"Running GenX scenario: {scen}")
         print(f"Case directory: {case_dir}")
@@ -119,7 +119,7 @@ def main():
 
     # 5) Loop over scenarios: copy results & create plots
     genx_cfg = simulation_settings["genx"]
-    base_results_dir = project_root / genx_cfg["base_results_dir"]
+    genx_inputs_dir = project_root / genx_cfg["genx_inputs_dir"]
     scenarios = genx_cfg["scenarios"]
     emissions_rel_path = genx_cfg.get("emissions_file", "emissions.csv")
 
@@ -127,7 +127,7 @@ def main():
         print(f"\n=== Processing scenario {scen} ===")
 
         # The original GenX case directory (inputs + outputs)
-        case_dir = (base_results_dir / scen).resolve()
+        case_dir = (genx_inputs_dir / scen).resolve()
 
         # Where we want to store this run's organized outputs:
         # output/<timestamp>/s1, s2, s3, ...
