@@ -97,116 +97,137 @@ def power_plot(df, sim_settings, plot_settings, save_path, sim_id):
     """
     Create power plots from power.csv according to power.json settings.
 
-    This function:
-      - drops the 'Zone' and 'AnnualSum' rows,
-      - sets 'Resource' as the index (time steps),
-      - plots either:
-          0: by resource/zone (all columns except 'Total'),
-          1: total only,
-          2: both.
+    zone_aggregation_method:
+      0: For each zone, one plot with one line per *unit* (zone-tech-unit).
+      1: For each zone, one plot with one line per *technology* (units summed).
+      2: For each zone, do both (so 2 plots per zone).
+
     """
 
-    # Drop rows that are not actual time steps
+    # --- 1. Clean and set time index ---
+
+    # Drop the rows that are not time steps
     if "Resource" in df.columns:
         df = df[~df["Resource"].isin(["Zone", "AnnualSum"])]
         df = df.set_index("Resource")
     else:
-        # If the structure ever changes, fall back gracefully
         df = df.copy()
 
-    # Convert all other columns to numeric (coerce errors to NaN)
+    # Convert remaining columns to numeric
     df = df.apply(pd.to_numeric, errors="coerce")
 
     fig_size = plot_settings["fig_size"]
     dpi = plot_settings["dpi"]
     zone_aggregation_method = plot_settings["zone_aggregation_method"]
 
-    # X-axis: positions 0..N-1, labels from index
+    # Basic x-axis: integer positions, labels every 24 steps (or reasonable fallback)
     x_positions = range(len(df.index))
-    # Choose tick step similar to your emissions plot (24 hours) if long enough
     tick_step = 24 if len(df.index) >= 24 else max(1, len(df.index) // 10 or 1)
     x_labels = df.index[::tick_step]
     x_ticks = list(range(len(df.index)))[::tick_step]
 
-    # 0) Plot by resource/zone (all columns except 'Total')
-    if zone_aggregation_method == 0:
-        plt.figure(figsize=fig_size)
-        plt.xlabel("Time")
-        plt.ylabel("Power (MW)")
-        plt.xticks(x_ticks, x_labels, rotation=45)
-        plt.title("Power by Resource Over Time")
-        plt.grid(False)
+    # --- 2. Helper: parse column names into (zone, tech, unit) ---
 
-        for col in df.columns:
-            if col == "Total":
-                continue
-            plt.plot(x_positions, df[col], label=col)
+    def parse_zone_tech(colname):
+        """
+        Parse column names of the form:
+          NY_Z_A_conventional_hydroelectric_1
+          NENG_Rest_utilitypv_class1_2
+        into (zone, tech, unit).
 
-        plt.legend()
-        filename = os.path.join(save_path, f"{sim_id}_Power_by_Resource")
-        plt.savefig(filename, dpi=dpi, bbox_inches="tight")
-        plt.close()
-        print(f"Saved: {filename}")
+        Heuristic tailored to the sample file:
+          - If name starts with 'NY_Z_', zone = first 3 tokens, else first 2.
+          - Last token after '_' is assumed to be the unit index.
+        """
+        if colname in ("Resource", "Total"):
+            return None, None, None
 
-    # 1) Plot total only
-    if zone_aggregation_method == 1:
-        if "Total" not in df.columns:
-            print("Warning: 'Total' column not found in power.csv for total plot.")
+        base, unit = colname.rsplit("_", 1)  # split off unit index
+        parts = base.split("_")
+
+        if parts[0] == "NY" and len(parts) >= 3:
+            zone_parts = parts[:3]      # e.g. NY_Z_A, NY_Z_G-I, NY_Z_C&E
+            tech_parts = parts[3:]
         else:
+            zone_parts = parts[:2]      # e.g. NENG_Rest, PJM_EMAC, PJM_Rest
+            tech_parts = parts[2:]
+
+        zone = "_".join(zone_parts)
+        tech = "_".join(tech_parts) if tech_parts else "Unknown"
+
+        return zone, tech, unit
+
+    # --- 3. Build mapping: zone -> list of (colname, tech, unit) ---
+
+    zone_to_cols = {}
+
+    for col in df.columns:
+        if col == "Total":
+            continue  # we don't treat Total as a zone/tech/unit column here
+        zone, tech, unit = parse_zone_tech(col)
+        if zone is None:
+            continue
+        zone_to_cols.setdefault(zone, []).append((col, tech, unit))
+
+    # --- 4. For each zone, build dataframes for:
+    #       - by_unit: original columns for that zone
+    #       - by_tech: sum across units for each technology
+    # -------------------------------------------------------
+
+    for zone, cols_info in zone_to_cols.items():
+        # All column names for this zone
+        zone_cols = [c for (c, t, u) in cols_info]
+
+        # Dataframe with only that zone's columns (by unit)
+        df_zone_by_unit = df[zone_cols].copy()
+
+        # Dataframe aggregated by technology (sum across units)
+        tech_to_cols = {}
+        for (col, tech, unit) in cols_info:
+            tech_to_cols.setdefault(tech, []).append(col)
+
+        df_zone_by_tech = pd.DataFrame(index=df.index)
+        for tech, tech_cols in tech_to_cols.items():
+            df_zone_by_tech[tech] = df[tech_cols].sum(axis=1)
+
+        # --- 5. Plot according to zone_aggregation_method ---
+
+        # 0) One plot per zone, one line per unit (no aggregation)
+        if zone_aggregation_method in (0, 2):
             plt.figure(figsize=fig_size)
             plt.xlabel("Time")
             plt.ylabel("Power (MW)")
             plt.xticks(x_ticks, x_labels, rotation=45)
-            plt.title("Total Power Over Time")
+            plt.title(f"Power by Unit – Zone {zone}")
             plt.grid(False)
-            plt.plot(x_positions, df["Total"], color="black")
 
-            filename = os.path.join(save_path, f"{sim_id}_Power_Total")
+            for (col, tech, unit) in cols_info:
+                label = f"{tech} (unit {unit})"
+                plt.plot(x_positions, df[col], label=label)
+
+            plt.legend(fontsize="small", ncol=2)
+            filename = os.path.join(save_path, f"{sim_id}_Power_Zone-{zone}_ByUnit")
             plt.savefig(filename, dpi=dpi, bbox_inches="tight")
             plt.close()
             print(f"Saved: {filename}")
 
-    # 2) Plot both: by resource and total
-    if zone_aggregation_method == 2:
-        # By resource
-        plt.figure(figsize=fig_size)
-        plt.xlabel("Time")
-        plt.ylabel("Power (MW)")
-        plt.xticks(x_ticks, x_labels, rotation=45)
-        plt.title("Power by Resource Over Time")
-        plt.grid(False)
-
-        for col in df.columns:
-            if col == "Total":
-                continue
-            plt.plot(x_positions, df[col], label=col)
-
-        plt.legend()
-        filename1 = os.path.join(save_path, f"{sim_id}_Power_by_Resource")
-        plt.savefig(filename1, dpi=dpi, bbox_inches="tight")
-        plt.close()
-
-        # Total
-        if "Total" not in df.columns:
-            print("Warning: 'Total' column not found in power.csv for total plot.")
-            filename2 = None
-        else:
+        # 1) One plot per zone, one line per technology (aggregated over units)
+        if zone_aggregation_method in (1, 2):
             plt.figure(figsize=fig_size)
             plt.xlabel("Time")
             plt.ylabel("Power (MW)")
             plt.xticks(x_ticks, x_labels, rotation=45)
-            plt.title("Total Power Over Time")
+            plt.title(f"Power by Technology – Zone {zone}")
             plt.grid(False)
-            plt.plot(x_positions, df["Total"], color="black")
 
-            filename2 = os.path.join(save_path, f"{sim_id}_Power_Total")
-            plt.savefig(filename2, dpi=dpi, bbox_inches="tight")
+            for tech in df_zone_by_tech.columns:
+                plt.plot(x_positions, df_zone_by_tech[tech], label=tech)
+
+            plt.legend(fontsize="small", ncol=2)
+            filename = os.path.join(save_path, f"{sim_id}_Power_Zone-{zone}_ByTech")
+            plt.savefig(filename, dpi=dpi, bbox_inches="tight")
             plt.close()
-
-        if filename2:
-            print(f"Saved: {filename1} and {filename2}")
-        else:
-            print(f"Saved: {filename1} (no Total column found)")
+            print(f"Saved: {filename}")
 
 
         
