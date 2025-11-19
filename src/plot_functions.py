@@ -16,7 +16,7 @@ def emissions_plot(df, sim_settings, plot_settings, save_path, sim_id):
 
     fig_size = plot_settings["fig_size"]
     dpi = plot_settings["dpi"]
-    zone_aggregation_method = sim_settings["zone_aggregation_method"]
+    zone_aggregation_method = plot_settings["zone_aggregation_method"]
 
     if zone_aggregation_method == 0: 
          plt.figure(figsize=fig_size)

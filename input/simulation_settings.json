@@ -2,8 +2,10 @@
     "run_GenX": 1, 
     "save_path": "output",
     "sim_comments": "This is a test.",
-    "emissions_plot": 1,
-    "zone_aggregation_method": 0, 
+    "generate_emissions_plot": 1,
+    "generate_capacity_plot": 0, 
+    "generate_power_plot": 0, 
+    "generate_demand_plot": 0, 
     "genx": {
     "julia_executable": "/Users/tedwhite15/.juliaup/bin/Julia",
     "project": "/Users/tedwhite15/.julia/environments/genx", 

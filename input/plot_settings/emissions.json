@@ -1,4 +1,5 @@
 {
+    "zone_aggregation_method": 0, 
     "fig_size": [12, 6],
     "dpi": 150,
     "title_all_zones": "Emissions All Zone ",
