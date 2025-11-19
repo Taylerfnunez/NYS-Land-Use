@@ -2,7 +2,9 @@ import matplotlib.pyplot as plt
 import os
 import pandas as pd
 
-
+##########################################
+          # EMISSIONS PLOT #
+##########################################
 
 def emissions_plot(df, sim_settings, plot_settings, save_path, sim_id):
     # Remove the 'AnnualSum' row 
@@ -84,6 +86,129 @@ def emissions_plot(df, sim_settings, plot_settings, save_path, sim_id):
          plt.savefig(filename2, dpi = dpi)
          plt.close()
          print(f"Saved: {filename1} and {filename2}")
+
+
+
+##########################################
+          # POWER PLOT #
+##########################################
+
+def power_plot(df, sim_settings, plot_settings, save_path, sim_id):
+    """
+    Create power plots from power.csv according to power.json settings.
+
+    This function:
+      - drops the 'Zone' and 'AnnualSum' rows,
+      - sets 'Resource' as the index (time steps),
+      - plots either:
+          0: by resource/zone (all columns except 'Total'),
+          1: total only,
+          2: both.
+    """
+
+    # Drop rows that are not actual time steps
+    if "Resource" in df.columns:
+        df = df[~df["Resource"].isin(["Zone", "AnnualSum"])]
+        df = df.set_index("Resource")
+    else:
+        # If the structure ever changes, fall back gracefully
+        df = df.copy()
+
+    # Convert all other columns to numeric (coerce errors to NaN)
+    df = df.apply(pd.to_numeric, errors="coerce")
+
+    fig_size = plot_settings["fig_size"]
+    dpi = plot_settings["dpi"]
+    zone_aggregation_method = plot_settings["zone_aggregation_method"]
+
+    # X-axis: positions 0..N-1, labels from index
+    x_positions = range(len(df.index))
+    # Choose tick step similar to your emissions plot (24 hours) if long enough
+    tick_step = 24 if len(df.index) >= 24 else max(1, len(df.index) // 10 or 1)
+    x_labels = df.index[::tick_step]
+    x_ticks = list(range(len(df.index)))[::tick_step]
+
+    # 0) Plot by resource/zone (all columns except 'Total')
+    if zone_aggregation_method == 0:
+        plt.figure(figsize=fig_size)
+        plt.xlabel("Time")
+        plt.ylabel("Power (MW)")
+        plt.xticks(x_ticks, x_labels, rotation=45)
+        plt.title("Power by Resource Over Time")
+        plt.grid(False)
+
+        for col in df.columns:
+            if col == "Total":
+                continue
+            plt.plot(x_positions, df[col], label=col)
+
+        plt.legend()
+        filename = os.path.join(save_path, f"{sim_id}_Power_by_Resource")
+        plt.savefig(filename, dpi=dpi, bbox_inches="tight")
+        plt.close()
+        print(f"Saved: {filename}")
+
+    # 1) Plot total only
+    if zone_aggregation_method == 1:
+        if "Total" not in df.columns:
+            print("Warning: 'Total' column not found in power.csv for total plot.")
+        else:
+            plt.figure(figsize=fig_size)
+            plt.xlabel("Time")
+            plt.ylabel("Power (MW)")
+            plt.xticks(x_ticks, x_labels, rotation=45)
+            plt.title("Total Power Over Time")
+            plt.grid(False)
+            plt.plot(x_positions, df["Total"], color="black")
+
+            filename = os.path.join(save_path, f"{sim_id}_Power_Total")
+            plt.savefig(filename, dpi=dpi, bbox_inches="tight")
+            plt.close()
+            print(f"Saved: {filename}")
+
+    # 2) Plot both: by resource and total
+    if zone_aggregation_method == 2:
+        # By resource
+        plt.figure(figsize=fig_size)
+        plt.xlabel("Time")
+        plt.ylabel("Power (MW)")
+        plt.xticks(x_ticks, x_labels, rotation=45)
+        plt.title("Power by Resource Over Time")
+        plt.grid(False)
+
+        for col in df.columns:
+            if col == "Total":
+                continue
+            plt.plot(x_positions, df[col], label=col)
+
+        plt.legend()
+        filename1 = os.path.join(save_path, f"{sim_id}_Power_by_Resource")
+        plt.savefig(filename1, dpi=dpi, bbox_inches="tight")
+        plt.close()
+
+        # Total
+        if "Total" not in df.columns:
+            print("Warning: 'Total' column not found in power.csv for total plot.")
+            filename2 = None
+        else:
+            plt.figure(figsize=fig_size)
+            plt.xlabel("Time")
+            plt.ylabel("Power (MW)")
+            plt.xticks(x_ticks, x_labels, rotation=45)
+            plt.title("Total Power Over Time")
+            plt.grid(False)
+            plt.plot(x_positions, df["Total"], color="black")
+
+            filename2 = os.path.join(save_path, f"{sim_id}_Power_Total")
+            plt.savefig(filename2, dpi=dpi, bbox_inches="tight")
+            plt.close()
+
+        if filename2:
+            print(f"Saved: {filename1} and {filename2}")
+        else:
+            print(f"Saved: {filename1} (no Total column found)")
+
+
         
 
 ##########################################
