@@ -5,8 +5,8 @@
     "genx": {
     "julia_executable": "/Users/tedwhite15/.juliaup/bin/Julia",
     "project": "/Users/tedwhite15/.julia/environments/genx", 
-    "base_results_dir": "input/GenX_settings/test1",
-    "scenarios": ["p1", "p4", "s1"]
+    "base_results_dir": "input/GenX_settings/test2",
+    "scenarios": ["s1", "s2", "s3"]
   }
     
    
