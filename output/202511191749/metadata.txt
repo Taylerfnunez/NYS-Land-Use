@@ -1,0 +1,24 @@
+{
+  "simulation_settings": {
+    "simulation_comments": "This is a test run. Goal: Check whether the metadata file contains content from run_settings.yml produced by GenX",
+    "run_genx": 1,
+    "genx_outputs_dir": "input/genx/genx_outputs/test1",
+    "save_path": "output",
+    "generate_emissions_plot": 1,
+    "generate_capacity_plot": 0,
+    "generate_power_plot": 0,
+    "generate_demand_plot": 0,
+    "genx": {
+      "julia_executable": "/Users/tedwhite15/.juliaup/bin/Julia",
+      "project": "/Users/tedwhite15/.julia/environments/genx",
+      "genx_inputs_dir": "input/genx/genx_inputs/test2",
+      "scenarios": [
+        "s1"
+      ],
+      "emissions_file": "results/emissions.csv"
+    }
+  },
+  "scenario_run_settings": {
+    "s1": "HydrogenHourlyMatching: 0\nNetworkExpansion: 1\nTimeDomainReductionFolder: \"TDR_results\"\nWriteOutputs: \"full\"\nSystemFolder: \"system\"\nEnableJuMPStringNames: true\nTrans_Loss_Segments: 1\nModelingtoGenerateAlternativeSlack: 0.1\nPoliciesFolder: \"policies\"\nLDSAdditionalConstraints: 1\nMultiStage: 0\nOperationWrapping: 0\nComputeConflicts: 1\nOverwriteResults: 0\nObjScale: 1\nModelingToGenerateAlternatives: 0\nOutputFullTimeSeries: 0\nMaxCapReq: 0\nMinCapReq: 0\nCO2Cap: 0\nWriteShadowPrices: 1\nModelingToGenerateAlternativeIterations: 100\nOutputFullTimeSeriesFolder: \"Full_TimeSeries\"\nHydrogenMinimumProduction: 0\nOperationalReserves: 0\nParameterScale: 0\nEnergyShareRequirement: 1\nPrintModel: 0\nTimeDomainReduction: 1\nDC_OPF: 0\nCapacityReserveMargin: 1\nMethodofMorris: 0\nStorageVirtualDischarge: 1\nMGAAnnualGeneration: 0\nStorageLosses: 0\nIncludeLossesInESR: 0\nResourcePoliciesFolder: \"policy_assignments\"\nWriteOutputsSettingsDict:\n  WriteReserveMarginWithWeights: true\n  WriteStorage: true\n  WriteStatus: true\n  WriteRsv: true\n  WriteNetRevenue: true\n  WriteNWExpansion: true\n  WriteSubsidyRevenue: true\n  WriteTimeWeights: true\n  WriteVREStor: true\n  WriteCO2: true\n  WriteESRPrices: true\n  WriteReg: true\n  WriteCurtailment: true\n  WriteCapacityFactor: true\n  WriteCommit: true\n  WriteStart: true\n  WriteReserveMargin: true\n  WriteFusion: true\n  WriteChargingCost: true\n  WriteCapacityValue: true\n  WriteEnergyRevenue: true\n  WriteAngles: true\n  WriteFuelConsumption: true\n  WriteStorageDual: true\n  WriteTransmissionLosses: true\n  WriteTransmissionFlows: true\n  WriteNSE: true\n  WriteCO2Cap: true\n  WriteOpWrapLDSStorInit: true\n  WriteEmissions: true\n  WriteESRRevenue: true\n  WriteCapacity: true\n  WriteVirtualDischarge: true\n  WriteReserveMarginRevenue: true\n  WriteOpWrapLDSdStor: true\n  WriteMaintenance: true\n  WritePower: true\n  WriteReliability: true\n  WriteCharge: true\n  WriteShutdown: true\n  WriteHydrogenPrices: true\n  WriteReserveMarginSlack: true\n  WriteCosts: true\n  WriteMaxCapReq: true\n  WriteHourlyMatchingPrices: true\n  WritePowerBalance: true\n  WriteMinCapReq: true\n  WritePrice: true\nVirtualChargeDischargeCost: 1\nUCommit: 0\nHourlyMatching: 0\nResourcesFolder: \"resources\"\n"
+  }
+}
