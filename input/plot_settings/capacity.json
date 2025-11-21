@@ -6,6 +6,9 @@
     "y_label_all_zones": "Capacity (MW)",
     "title_by_zone": "Capacity by Zone",
     "x_label_by_zone": "Time",
-    "y_label_by_zone": "Capacity (MW)"
-   
+    "y_label_by_zone": "Capacity (MW)",
+    "all zones": 1,
+    "specific zone": 0,
+    "zones_specific": [1,2,5]
+    
  }

@@ -5,6 +5,7 @@ import os
 import numpy as np 
 import pandas as pd
 from plot_functions import emissions_plot
+from plot_functions import capacity_plot
 import datetime
 
 
@@ -32,6 +33,10 @@ if __name__ == "__main__":
     with open(emissions_json_path, 'r') as f: #text
         emissions_settings = json.load(f)     #dict
 
+    capacity_json_path = os.path.join(plot_settings_path, "capacity.json")
+    with open(capacity_json_path, 'r') as f: #text
+        capacity_settings = json.load(f)     #dict
+
 
     
     #################################
@@ -43,6 +48,10 @@ if __name__ == "__main__":
 
     emissions_csv_path = os.path.join("input", "GenX_results", genx_results_subfolder, "emissions.csv")
     emissions_csv = pd.read_csv(emissions_csv_path)
+
+    capacity_csv_path = os.path.join("input", "GenX_results", genx_results_subfolder, "capacity.csv")
+    capacity_csv = pd.read_csv(capacity_csv_path)
+
 
 
 
@@ -67,7 +76,8 @@ if __name__ == "__main__":
     if simulation_settings["emissions_plot"] == 1:
         emissions_plot(emissions_csv, simulation_settings, emissions_settings, save_path, sim_id)
         
-
+    if simulation_settings["capacity_plot"] == 1:
+        capacity_plot(capacity_csv, simulation_settings, capacity_settings, save_path, sim_id)
 
 
 
