@@ -1,5 +1,5 @@
 {
-    "simulation_comments": "PG-2040-nuclear-A  test run. Time clustering is set to 12 periods. If this runs correctly, copy and paste these results into genx_outputs to plot later.",
+    "simulation_comments": "PG-2040-nuclear-A  test run. Mincap was set to 0 for all scenarios because previous run generated infeasibilities. Time clustering is set to 12 periods. If this runs correctly, copy and paste these results into genx_outputs to plot later.",
     "run_genx": 1, 
     "genx_outputs_dir": "input/genx/genx_outputs/test1",
     "save_path": "output",
