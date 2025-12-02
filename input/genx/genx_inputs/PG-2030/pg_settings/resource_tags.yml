@@ -1,0 +1,1006 @@
+# CLUSTER TAGS
+# All of the values will be 0 by default. If non-zero, add here.
+# The names below are matched to technology names in the data ignoring case, whitespace,
+# and underscores, and must only match the start of the technology name. Since e.g.
+# "Natural Gas" will match any "Natural Gas *", more specific terms should be listed
+# after more general terms ("Natural Gas CCS100: 0" should come after "Natural Gas: 1").
+
+model_tag_names:
+  - THERM
+  - VRE
+  - MUST_RUN
+  - STOR
+  - FLEX
+  - HYDRO
+  - LDS
+  - New_Build
+  - Num_VRE_Bins
+  - ESR_1 # New England RPS
+  - ESR_2 # New England CES
+  - ESR_3 # PJM RPS
+  - ESR_4 # PJM CES
+  - ESR_5 # NY RPS
+  - ESR_6 # NY CES
+  - CapRes_1 # New England Capapcity Reserve Margin
+  - CapRes_2 # New York Capapcity Reserve Margin
+  - CapRes_3 # PJM Capapcity Reserve Margin
+  - MinCapTag_1 # NY Offshore wind
+  - MinCapTag_2 # MD offshore wind, PJM_SMAC
+  - MinCapTag_3 # NJ offshore wind, PJM_EMAC
+  - MinCapTag_4 # VA offshore wind, PJM_Dom
+  - MinCapTag_5 # NY Storage
+  - MinCapTag_6 # NJ Storage, PJM_EMAC
+  - MinCapTag_7 # VA Storage, PJM_Dom
+  - MinCapTag_8 # NY Solar
+  - MinCapTag_9 # NY Nuclear
+  - MinCapTag_10 # COMD Nuclear, NJ Nuclear, PJM_EMAC
+  - MinCapTag_11 # ME Wind
+  - MinCapTag_12 # ME offshore wind
+  - MinCapTag_13 # MA Solar
+
+
+default_model_tag: 0
+
+model_tag_values:
+  THERM:
+    Conventional Steam Coal: 1
+    Natural Gas Fired Combined Cycle: 1
+    Natural Gas Fired Combustion Turbine: 1
+    Petroleum Liquids: 1
+    Natural Gas Internal Combustion Engine: 1
+    Nuclear: 1
+    Natural Gas Steam Turbine: 1
+    Petroleum Coke: 1
+    Geothermal: 1
+    Municipal Solid Waste: 1
+    Landfill Gas: 1
+    Coal Integrated Gasification Combined Cycle: 1
+    Other Waste Biomass: 1
+    Other Gases: 1
+    Other Natural Gas: 1
+    Other_peaker: 1 # Is there any way to do this based on the underlying categories?
+    NaturalGas_: 1
+    Biopower_: 1
+    Nuclear_: 1
+    CSP_: 1
+    NGCCS100: 1
+  Num_VRE_Bins:
+    CSP: 1
+    LandbasedWind: 1
+    OffshoreWind: 1
+    Onshore Wind: 1
+    Solar Photovoltaic: 1
+    Solar Thermal without Energy Storage: 1
+    UtilityPV: 1
+  VRE:
+    Onshore Wind Turbine: 1
+    Offshore Wind Turbine: 1
+    Solar Photovoltaic: 1
+    Solar Thermal without Energy Storage: 1
+    LandbasedWind_: 1
+    OffShoreWind_: 1
+    UtilityPV_: 1
+    CSP_: 1
+  MUST_RUN:
+    Geothermal: 1
+    Wood/Wood Waste Biomass: 1
+    Biomass: 1
+    Small Hydroelectric: 1
+    distributed_generation: 1
+  STOR:
+    Hydroelectric Pumped Storage: 1
+    Batteries: 1
+    Battery: 1
+  FLEX: 
+    trans_light_duty: 1
+    res_water_heat: 1
+  HYDRO:
+    Conventional Hydroelectric: 1
+    Hydropower: 1
+  LDS:
+    Conventional Hydroelectric: 1
+    Hydropower: 1
+  New_Build:
+    Conventional Hydroelectric: -1
+    Geothermal: -1
+    Biomass: -1
+    Small Hydroelectric: -1
+    NaturalGas_: 1
+    LandbasedWind_: 1
+    OffShoreWind_: 1
+    UtilityPV_: 1
+    Battery_: 1
+    Biopower_: 1
+    NGCCS100: 1
+    Hydroelectric Pumped Storage: -1
+    Nuclear: 0
+    Nuclear_: 1
+  Hydro_level:
+    Conventional Hydroelectric: 0.5
+
+# Tags for a technology in a specific region
+# Format should be regional_tag_values: <region>: <tag name>: <technology>: <tag value>
+# Technologies will be matched using str.contains(), so partial names can be included
+# but they might unintentially map to other techs
+regional_tag_values:
+  NENG_Rest:
+    CapRes_1:
+      Conventional Steam Coal: 0.93
+      Natural Gas Fired Combined Cycle: 0.93
+      Natural Gas Fired Combustion Turbine: 0.93
+      Petroleum Liquids: 0.93
+      Natural Gas Internal Combustion Engine: 0.93
+      Nuclear: 0.93
+      Natural Gas Steam Turbine: 0.93
+      Wood/Wood Waste Biomass: 0.93
+      Petroleum Coke: 0.93
+      Geothermal: 0.93
+      Municipal Solid Waste: 0.93
+      Landfill Gas: 0.93
+      Coal Integrated Gasification Combined Cycle: 0.93
+      Other Waste Biomass: 0.93
+      Other Gases: 0.93
+      Other Natural Gas: 0.93
+      Other_peaker: 0.93 # Is there any way to do this based on the underlying categories?
+      Biomass: 0.93
+      NaturalGas_: 0.93
+      Biopower_: 0.93
+      Nuclear_: 0.93
+      CSP_: 0.93
+      NGCCS100: 0.93
+      Onshore Wind Turbine: 0.8
+      Offshore Wind Turbine: 0.8
+      Solar Photovoltaic: 0.8
+      UtilityPV_: 0.8
+      LandbasedWind_: 0.8
+      OffShoreWind_: 0.8
+      Battery_: 0.95
+      Batteries: 0.95
+      Conventional Hydroelectric: 0.8
+      Hydroelectric Pumped Storage: 0.95
+      Small Hydroelectric: 0.8     
+      ev_load_shifting: 0.95
+    ESR_1:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 0 # Need they key here to update value in 2045 cases
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+    ESR_2:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+      Nuclear: 1
+      Nuclear_: 1
+      NaturalGas_CCCCS: 1
+      NaturalGas_CCS100: 1
+      NGCCS100: 1
+    MinCapTag_11: # NENG wind
+      Onshore Wind Turbine: 1
+      LandbasedWind_: 1
+    MinCapTag_12: # NENG oggshore wind
+      Offshore Wind Turbine: 1
+      OffShoreWind_: 1
+    MinCapTag_13: # MA solar
+      Solar Photovoltaic: 1
+      UtilityPV_: 1
+  NY_Z_A:
+    CapRes_2:
+      Conventional Steam Coal: 0.93
+      Natural Gas Fired Combined Cycle: 0.93
+      Natural Gas Fired Combustion Turbine: 0.93
+      Petroleum Liquids: 0.93
+      Natural Gas Internal Combustion Engine: 0.93
+      Nuclear: 0.93
+      Natural Gas Steam Turbine: 0.93
+      Wood/Wood Waste Biomass: 0.93
+      Petroleum Coke: 0.93
+      Geothermal: 0.93
+      Municipal Solid Waste: 0.93
+      Landfill Gas: 0.93
+      Coal Integrated Gasification Combined Cycle: 0.93
+      Other Waste Biomass: 0.93
+      Other Gases: 0.93
+      Other Natural Gas: 0.93
+      Other_peaker: 0.93 # Is there any way to do this based on the underlying categories?
+      Biomass: 0.93
+      NaturalGas_: 0.93
+      Biopower_: 0.93
+      Nuclear_: 0.93
+      CSP_: 0.93
+      NGCCS100: 0.93
+      Onshore Wind Turbine: 0.8
+      Offshore Wind Turbine: 0.8
+      Solar Photovoltaic: 0.8
+      UtilityPV_: 0.8
+      LandbasedWind_: 0.8
+      OffShoreWind_: 0.8
+      Battery_: 0.95
+      Batteries: 0.95
+      Conventional Hydroelectric: 0.8
+      Hydroelectric Pumped Storage: 0.95
+      Small Hydroelectric: 0.8     
+      ev_load_shifting: 0.95
+    ESR_5:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1 #EC change
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+    ESR_6:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+      Nuclear: 1
+      Nuclear_: 1
+      NaturalGas_CCCCS: 1
+      NaturalGas_CCS100: 1
+      NGCCS100: 1
+    MinCapTag_1: # NY offshorewind
+      Offshore Wind Turbine: 1
+      OffShoreWind_: 1
+    MinCapTag_4: # NY storage
+      Battery_: 1
+      Batteries: 1
+    MinCapTag_7: # NY Solar
+      UtilityPV_: 1
+      Solar Photovoltaic: 1
+    MinCapTag_8: # NY nuclear
+      Nuclear: 1
+  NY_Z_B:
+    CapRes_2:
+      Conventional Steam Coal: 0.93
+      Natural Gas Fired Combined Cycle: 0.93
+      Natural Gas Fired Combustion Turbine: 0.93
+      Petroleum Liquids: 0.93
+      Natural Gas Internal Combustion Engine: 0.93
+      Nuclear: 0.93
+      Natural Gas Steam Turbine: 0.93
+      Wood/Wood Waste Biomass: 0.93
+      Petroleum Coke: 0.93
+      Geothermal: 0.93
+      Municipal Solid Waste: 0.93
+      Landfill Gas: 0.93
+      Coal Integrated Gasification Combined Cycle: 0.93
+      Other Waste Biomass: 0.93
+      Other Gases: 0.93
+      Other Natural Gas: 0.93
+      Other_peaker: 0.93 # Is there any way to do this based on the underlying categories?
+      Biomass: 0.93
+      NaturalGas_: 0.93
+      Biopower_: 0.93
+      Nuclear_: 0.93
+      CSP_: 0.93
+      NGCCS100: 0.93
+      Onshore Wind Turbine: 0.8
+      Offshore Wind Turbine: 0.8
+      Solar Photovoltaic: 0.8
+      UtilityPV_: 0.8
+      LandbasedWind_: 0.8
+      OffShoreWind_: 0.8
+      Battery_: 0.95
+      Batteries: 0.95
+      Conventional Hydroelectric: 0.8
+      Hydroelectric Pumped Storage: 0.95   
+      Small Hydroelectric: 0.8     
+      ev_load_shifting: 0.95  
+    ESR_5:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1 # EC change 6-22-2021
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+    ESR_6:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+      Nuclear: 1
+      Nuclear_: 1
+      NaturalGas_CCCCS: 1
+      NaturalGas_CCS100: 1
+      NGCCS100: 1
+    MinCapTag_1: # NY offshorewind
+      Offshore Wind Turbine: 1
+      OffShoreWind_: 1
+    MinCapTag_4: # NY storage
+      Battery_: 1
+      Batteries: 1
+    MinCapTag_7: # NY Solar
+      UtilityPV_: 1
+      Solar Photovoltaic: 1
+    MinCapTag_8: # NY nuclear
+      Nuclear: 1
+  NY_Z_C&E:
+    CapRes_2:
+      Conventional Steam Coal: 0.93
+      Natural Gas Fired Combined Cycle: 0.93
+      Natural Gas Fired Combustion Turbine: 0.93
+      Petroleum Liquids: 0.93
+      Natural Gas Internal Combustion Engine: 0.93
+      Nuclear: 0.93
+      Natural Gas Steam Turbine: 0.93
+      Wood/Wood Waste Biomass: 0.93
+      Petroleum Coke: 0.93
+      Geothermal: 0.93
+      Municipal Solid Waste: 0.93
+      Landfill Gas: 0.93
+      Coal Integrated Gasification Combined Cycle: 0.93
+      Other Waste Biomass: 0.93
+      Other Gases: 0.93
+      Other Natural Gas: 0.93
+      Other_peaker: 0.93 # Is there any way to do this based on the underlying categories?
+      Biomass: 0.93
+      NaturalGas_: 0.93
+      Biopower_: 0.93
+      Nuclear_: 0.93
+      CSP_: 0.93
+      NGCCS100: 0.93
+      Onshore Wind Turbine: 0.8
+      Offshore Wind Turbine: 0.8
+      Solar Photovoltaic: 0.8
+      UtilityPV_: 0.8
+      LandbasedWind_: 0.8
+      OffShoreWind_: 0.8
+      Battery_: 0.95
+      Batteries: 0.95
+      Conventional Hydroelectric: 0.8
+      Hydroelectric Pumped Storage: 0.95     
+      Small Hydroelectric: 0.8     
+      ev_load_shifting: 0.95
+    ESR_5:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1 # EC change 6-22-2021
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+    ESR_6:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+      Nuclear: 1
+      Nuclear_: 1
+      NaturalGas_CCCCS: 1
+      NaturalGas_CCS100: 1
+      NGCCS100: 1
+    MinCapTag_1: # NY offshorewind
+      Offshore Wind Turbine: 1
+      OffShoreWind_: 1
+    MinCapTag_4: # NY storage
+      Battery_: 1
+      Batteries: 1
+    MinCapTag_7: # NY Solar
+      UtilityPV_: 1
+      Solar Photovoltaic: 1
+    MinCapTag_8: # NY nuclear
+      Nuclear: 1
+  NY_Z_D:
+    CapRes_2:
+      Conventional Steam Coal: 0.93
+      Natural Gas Fired Combined Cycle: 0.93
+      Natural Gas Fired Combustion Turbine: 0.93
+      Petroleum Liquids: 0.93
+      Natural Gas Internal Combustion Engine: 0.93
+      Nuclear: 0.93
+      Natural Gas Steam Turbine: 0.93
+      Wood/Wood Waste Biomass: 0.93
+      Petroleum Coke: 0.93
+      Geothermal: 0.93
+      Municipal Solid Waste: 0.93
+      Landfill Gas: 0.93
+      Coal Integrated Gasification Combined Cycle: 0.93
+      Other Waste Biomass: 0.93
+      Other Gases: 0.93
+      Other Natural Gas: 0.93
+      Other_peaker: 0.93 # Is there any way to do this based on the underlying categories?
+      Biomass: 0.93
+      NaturalGas_: 0.93
+      Biopower_: 0.93
+      Nuclear_: 0.93
+      CSP_: 0.93
+      NGCCS100: 0.93
+      Onshore Wind Turbine: 0.8
+      Offshore Wind Turbine: 0.8
+      Solar Photovoltaic: 0.8
+      UtilityPV_: 0.8
+      LandbasedWind_: 0.8
+      OffShoreWind_: 0.8
+      Battery_: 0.95
+      Batteries: 0.95
+      Conventional Hydroelectric: 0.8
+      Hydroelectric Pumped Storage: 0.95   
+      Small Hydroelectric: 0.8     
+      ev_load_shifting: 0.95  
+    ESR_5:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1 # EC change 6-22-2021
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+    ESR_6:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+      Nuclear: 1
+      Nuclear_: 1
+      NaturalGas_CCCCS: 1
+      NaturalGas_CCS100: 1
+      NGCCS100: 1
+    MinCapTag_1: # NY offshorewind
+      Offshore Wind Turbine: 1
+      OffShoreWind_: 1
+    MinCapTag_4: # NY storage
+      Battery_: 1
+      Batteries: 1
+    MinCapTag_7: # NY Solar
+      UtilityPV_: 1
+      Solar Photovoltaic: 1
+    MinCapTag_8: # NY nuclear
+      Nuclear: 1
+  NY_Z_F:
+    CapRes_2:
+      Conventional Steam Coal: 0.93
+      Natural Gas Fired Combined Cycle: 0.93
+      Natural Gas Fired Combustion Turbine: 0.93
+      Petroleum Liquids: 0.93
+      Natural Gas Internal Combustion Engine: 0.93
+      Nuclear: 0.93
+      Natural Gas Steam Turbine: 0.93
+      Wood/Wood Waste Biomass: 0.93
+      Petroleum Coke: 0.93
+      Geothermal: 0.93
+      Municipal Solid Waste: 0.93
+      Landfill Gas: 0.93
+      Coal Integrated Gasification Combined Cycle: 0.93
+      Other Waste Biomass: 0.93
+      Other Gases: 0.93
+      Other Natural Gas: 0.93
+      Other_peaker: 0.93 # Is there any way to do this based on the underlying categories?
+      Biomass: 0.93
+      NaturalGas_: 0.93
+      Biopower_: 0.93
+      Nuclear_: 0.93
+      CSP_: 0.93
+      NGCCS100: 0.93
+      Onshore Wind Turbine: 0.8
+      Offshore Wind Turbine: 0.8
+      Solar Photovoltaic: 0.8
+      UtilityPV_: 0.8
+      LandbasedWind_: 0.8
+      OffShoreWind_: 0.8
+      Battery_: 0.95
+      Batteries: 0.95
+      Conventional Hydroelectric: 0.8
+      Hydroelectric Pumped Storage: 0.95    
+      Small Hydroelectric: 0.8     
+      ev_load_shifting: 0.95 
+    ESR_5:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1 # EC change 6-22-2021
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+    ESR_6:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+      Nuclear: 1
+      Nuclear_: 1
+      NaturalGas_CCCCS: 1
+      NaturalGas_CCS100: 1
+      NGCCS100: 1
+    MinCapTag_1: # NY offshorewind
+      Offshore Wind Turbine: 1
+      OffShoreWind_: 1
+    MinCapTag_4: # NY storage
+      Battery_: 1
+      Batteries: 1
+    MinCapTag_7: # NY Solar
+      UtilityPV_: 1
+      Solar Photovoltaic: 1
+    MinCapTag_8: # NY nuclear
+      Nuclear: 1
+  NY_Z_G-I:
+    CapRes_2:
+      Conventional Steam Coal: 0.93
+      Natural Gas Fired Combined Cycle: 0.93
+      Natural Gas Fired Combustion Turbine: 0.93
+      Petroleum Liquids: 0.93
+      Natural Gas Internal Combustion Engine: 0.93
+      Nuclear: 0.93
+      Natural Gas Steam Turbine: 0.93
+      Wood/Wood Waste Biomass: 0.93
+      Petroleum Coke: 0.93
+      Geothermal: 0.93
+      Municipal Solid Waste: 0.93
+      Landfill Gas: 0.93
+      Coal Integrated Gasification Combined Cycle: 0.93
+      Other Waste Biomass: 0.93
+      Other Gases: 0.93
+      Other Natural Gas: 0.93
+      Other_peaker: 0.93 # Is there any way to do this based on the underlying categories?
+      Biomass: 0.93
+      NaturalGas_: 0.93
+      Biopower_: 0.93
+      Nuclear_: 0.93
+      CSP_: 0.93
+      NGCCS100: 0.93
+      Onshore Wind Turbine: 0.8
+      Offshore Wind Turbine: 0.8
+      Solar Photovoltaic: 0.8
+      UtilityPV_: 0.8
+      LandbasedWind_: 0.8
+      OffShoreWind_: 0.8
+      Battery_: 0.95
+      Batteries: 0.95
+      Conventional Hydroelectric: 0.8
+      Hydroelectric Pumped Storage: 0.95     
+      Small Hydroelectric: 0.8     
+      ev_load_shifting: 0.95
+    ESR_5:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1 # EC change 6-22-2021
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+    ESR_6:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+      Nuclear: 1
+      Nuclear_: 1
+      NaturalGas_CCCCS: 1
+      NaturalGas_CCS100: 1
+      NGCCS100: 1
+    MinCapTag_1: # NY offshorewind
+      Offshore Wind Turbine: 1
+      OffShoreWind_: 1
+    MinCapTag_4: # NY storage
+      Battery_: 1
+      Batteries: 1
+    MinCapTag_7: # NY Solar
+      UtilityPV_: 1
+      Solar Photovoltaic: 1
+    MinCapTag_8: # NY nuclear
+      Nuclear: 1
+  NY_Z_J:
+    CapRes_2:
+      Conventional Steam Coal: 0.93
+      Natural Gas Fired Combined Cycle: 0.93
+      Natural Gas Fired Combustion Turbine: 0.93
+      Petroleum Liquids: 0.93
+      Natural Gas Internal Combustion Engine: 0.93
+      Nuclear: 0.93
+      Natural Gas Steam Turbine: 0.93
+      Wood/Wood Waste Biomass: 0.93
+      Petroleum Coke: 0.93
+      Geothermal: 0.93
+      Municipal Solid Waste: 0.93
+      Landfill Gas: 0.93
+      Coal Integrated Gasification Combined Cycle: 0.93
+      Other Waste Biomass: 0.93
+      Other Gases: 0.93
+      Other Natural Gas: 0.93
+      Other_peaker: 0.93 # Is there any way to do this based on the underlying categories?
+      Biomass: 0.93
+      NaturalGas_: 0.93
+      Biopower_: 0.93
+      Nuclear_: 0.93
+      CSP_: 0.93
+      NGCCS100: 0.93
+      Onshore Wind Turbine: 0.8
+      Offshore Wind Turbine: 0.8
+      Solar Photovoltaic: 0.8
+      UtilityPV_: 0.8
+      LandbasedWind_: 0.8
+      OffShoreWind_: 0.8
+      Battery_: 0.95
+      Batteries: 0.95
+      Conventional Hydroelectric: 0.8
+      Hydroelectric Pumped Storage: 0.95     
+      Small Hydroelectric: 0.8     
+      ev_load_shifting: 0.95
+    ESR_5:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1 # EC change 6-22-2021
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+    ESR_6:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+      Nuclear: 1
+      Nuclear_: 1
+      NaturalGas_CCCCS: 1
+      NaturalGas_CCS100: 1
+      NGCCS100: 1
+    MinCapTag_1: # NY offshorewind
+      Offshore Wind Turbine: 1
+      OffShoreWind_: 1
+    MinCapTag_4: # NY storage
+      Battery_: 1
+      Batteries: 1
+    MinCapTag_7: # NY Solar
+      UtilityPV_: 1
+      Solar Photovoltaic: 1
+    MinCapTag_8: # NY nuclear
+      Nuclear: 1
+  NY_Z_K:
+    CapRes_2:
+      Conventional Steam Coal: 0.93
+      Natural Gas Fired Combined Cycle: 0.93
+      Natural Gas Fired Combustion Turbine: 0.93
+      Petroleum Liquids: 0.93
+      Natural Gas Internal Combustion Engine: 0.93
+      Nuclear: 0.93
+      Natural Gas Steam Turbine: 0.93
+      Wood/Wood Waste Biomass: 0.93
+      Petroleum Coke: 0.93
+      Geothermal: 0.93
+      Municipal Solid Waste: 0.93
+      Landfill Gas: 0.93
+      Coal Integrated Gasification Combined Cycle: 0.93
+      Other Waste Biomass: 0.93
+      Other Gases: 0.93
+      Other Natural Gas: 0.93
+      Other_peaker: 0.93 # Is there any way to do this based on the underlying categories?
+      Biomass: 0.93
+      NaturalGas_: 0.93
+      Biopower_: 0.93
+      Nuclear_: 0.93
+      CSP_: 0.93
+      NGCCS100: 0.93
+      Onshore Wind Turbine: 0.8
+      Offshore Wind Turbine: 0.8
+      Solar Photovoltaic: 0.8
+      UtilityPV_: 0.8
+      LandbasedWind_: 0.8
+      OffShoreWind_: 0.8
+      Battery_: 0.95
+      Batteries: 0.95
+      Conventional Hydroelectric: 0.8
+      Hydroelectric Pumped Storage: 0.95    
+      Small Hydroelectric: 0.8     
+      ev_load_shifting: 0.95  
+    ESR_5:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1 # EC change 6-22-2021 
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+    ESR_6:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+      Nuclear: 1
+      Nuclear_: 1
+      NaturalGas_CCCCS: 1
+      NaturalGas_CCS100: 1
+      NGCCS100: 1
+    MinCapTag_1: # NY offshorewind
+      Offshore Wind Turbine: 1
+      OffShoreWind_: 1
+    MinCapTag_4: # NY storage
+      Battery_: 1
+      Batteries: 1
+    MinCapTag_7: # NY Solar
+      UtilityPV_: 1
+      Solar Photovoltaic: 1
+    MinCapTag_8: # NY nuclear
+      Nuclear: 1
+  PJM_EMAC:
+    CapRes_3:
+      Conventional Steam Coal: 0.93
+      Natural Gas Fired Combined Cycle: 0.93
+      Natural Gas Fired Combustion Turbine: 0.93
+      Petroleum Liquids: 0.93
+      Natural Gas Internal Combustion Engine: 0.93
+      Nuclear: 0.93
+      Natural Gas Steam Turbine: 0.93
+      Wood/Wood Waste Biomass: 0.93
+      Petroleum Coke: 0.93
+      Geothermal: 0.93
+      Municipal Solid Waste: 0.93
+      Landfill Gas: 0.93
+      Coal Integrated Gasification Combined Cycle: 0.93
+      Other Waste Biomass: 0.93
+      Other Gases: 0.93
+      Other Natural Gas: 0.93
+      Other_peaker: 0.93 # Is there any way to do this based on the underlying categories?
+      Biomass: 0.93
+      NaturalGas_: 0.93
+      Biopower_: 0.93
+      Nuclear_: 0.93
+      CSP_: 0.93
+      NGCCS100: 0.93
+      Onshore Wind Turbine: 0.8
+      Offshore Wind Turbine: 0.8
+      Solar Photovoltaic: 0.8
+      UtilityPV_: 0.8
+      LandbasedWind_: 0.8
+      OffShoreWind_: 0.8
+      Battery_: 0.95
+      Batteries: 0.95
+      Conventional Hydroelectric: 0.8
+      Hydroelectric Pumped Storage: 0.95    
+      Small Hydroelectric: 0.8     
+      ev_load_shifting: 0.95
+    ESR_3:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 0 # Need they key here to update value in 2045 cases
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+    ESR_4:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+      Nuclear: 1
+      Nuclear_: 1
+      NaturalGas_CCCCS: 1
+      NaturalGas_CCS100: 1
+      NGCCS100: 1
+    MinCapTag_3: # NJ OSW
+      Offshore Wind Turbine: 1
+      OffShoreWind_: 1
+    MinCapTag_5: # NJ storage
+      Battery_: 1
+      Batteries: 1
+    MinCapTag_10: # NJ storage
+        Nuclear: 1
+  PJM_Rest:
+    CapRes_3:
+      Conventional Steam Coal: 0.93
+      Natural Gas Fired Combined Cycle: 0.93
+      Natural Gas Fired Combustion Turbine: 0.93
+      Petroleum Liquids: 0.93
+      Natural Gas Internal Combustion Engine: 0.93
+      Nuclear: 0.93
+      Natural Gas Steam Turbine: 0.93
+      Wood/Wood Waste Biomass: 0.93
+      Petroleum Coke: 0.93
+      Geothermal: 0.93
+      Municipal Solid Waste: 0.93
+      Landfill Gas: 0.93
+      Coal Integrated Gasification Combined Cycle: 0.93
+      Other Waste Biomass: 0.93
+      Other Gases: 0.93
+      Other Natural Gas: 0.93
+      Other_peaker: 0.93 # Is there any way to do this based on the underlying categories?
+      Biomass: 0.93
+      NaturalGas_: 0.93
+      Biopower_: 0.93
+      Nuclear_: 0.93
+      CSP_: 0.93
+      NGCCS100: 0.93
+      Onshore Wind Turbine: 0.8
+      Offshore Wind Turbine: 0.8
+      Solar Photovoltaic: 0.8
+      UtilityPV_: 0.8
+      LandbasedWind_: 0.8
+      OffShoreWind_: 0.8
+      Battery_: 0.95
+      Batteries: 0.95
+      Conventional Hydroelectric: 0.8
+      Hydroelectric Pumped Storage: 0.95
+      Small Hydroelectric: 0.8     
+      ev_load_shifting: 0.95
+    ESR_3:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 0 # Need they key here to update value in 2045 cases
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+    ESR_4:
+      Biomass: 1
+      Geothermal: 1
+      Small Hydroelectric: 1
+      Conventional Hydroelectric: 1
+      Onshore Wind Turbine: 1
+      Offshore Wind Turbine: 1
+      Solar Photovoltaic: 1
+      Biopower_: 1
+      UtilityPV_: 1
+      LandbasedWind_: 1
+      OffShoreWind_: 1
+      Nuclear: 1
+      Nuclear_: 1
+      NaturalGas_CCCCS: 1
+      NaturalGas_CCS100: 1
+      NGCCS100: 1
+    MinCapTag_2:
+      Offshore Wind Turbine: 1
+      OffShoreWind_: 1
+    MinCapTag_6:
+      Battery_: 1
+      Batteries: 1
+    MinCapTag_9:
+      Nuclear: 1
+ 
+# WHAT TO DO WITH MIN CAP TAGS?
+MinCapReq:
+  MinCapTag_1:
+    description: NY_OSW
+    min_mw: 5738
+  MinCapTag_2:
+    description: PJM_OSW
+    min_mw: 3850
+  MinCapTag_3:
+    description: NJ_OSW
+    min_mw: 4700
+  MinCapTag_4:
+    description: NY_Storage
+    min_mw: 6000
+  MinCapTag_5:
+    description: NJ_Storage
+    min_mw: 1580
+  MinCapTag_6:
+    description: PJM_Storage
+    min_mw: 1440
+  MinCapTag_7:
+    description: NY_PV
+    min_mw: 6000
+  MinCapTag_8:
+    description: NY_Nuclear
+    min_mw: 2700
+  MinCapTag_9:
+    description: PJM_Nuclear
+    min_mw: 2965
+  MinCapTag_10:
+    description: NJ_Nuclear
+    min_mw: 3490
+  MinCapTag_11:
+    description: ME_Wind
+    min_mw: 8000
+  MinCapTag_12:
+    description: ME_OSW
+    min_mw: 5000
+  MinCapTag_13:
+    description: MA_Solar
+    min_mw: 3200

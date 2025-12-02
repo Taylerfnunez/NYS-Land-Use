@@ -1,0 +1,13 @@
+﻿case_id,year,growth,tx_expansion,ng_price,ccs_capex,renewable_capex,nuclear_capex,conv_hydro_rps_eligible,ca_nuclear_allowed,electrification
+s1,2040,normal,high,reference,mid,mid,mid,no,no,high_electrification
+s4,2040,normal,high,reference,mid,mid,mid,no,no,high_electrification
+s5,2040,normal,high,reference,mid,mid,mid,no,no,high_electrification
+s6,2040,normal,high,reference,mid,mid,mid,no,no,high_electrification
+s7,2040,normal,high,reference,mid,mid,mid,no,no,high_electrification
+s8,2040,normal,high,reference,mid,mid,mid,no,no,high_electrification
+p1,2040,normal,high,reference,mid,low,mid,no,no,high_electrification
+p4,2040,normal,high,reference,mid,low,mid,no,no,high_electrification
+p5,2040,normal,high,reference,mid,low,mid,no,no,high_electrification
+p6,2040,normal,high,reference,mid,low,mid,no,no,high_electrification
+p7,2040,normal,high,reference,mid,low,mid,no,no,high_electrification
+p8,2040,normal,high,reference,mid,low,mid,no,no,high_electrification

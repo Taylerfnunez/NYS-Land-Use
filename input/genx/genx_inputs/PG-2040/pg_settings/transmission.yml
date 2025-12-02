@@ -1,0 +1,48 @@
+# Transmission financial information to calculate annual investment costs
+# capex_mw_mile: Capital cost per MW-mile for all (numeric) or each model region (dict).
+# WACC and investment years from https://www.sciencedirect.com/science/article/abs/pii/S0301421519305816
+transmission_investment_cost:
+  # If true, uses interconnect_annuity when available
+  use_total: true
+  spur:
+    capex_mw_mile:
+      NY_Z_A: 5200
+      NY_Z_B: 5200
+      NY_Z_C&E: 5200
+      NY_Z_D: 5200
+      NY_Z_F: 5200
+      NY_Z_G-I: 5200
+      NY_Z_J: 5200
+      NY_Z_K: 5200
+      PJM_EMAC: 5200
+      PJM_Rest: 5200
+      NENG_Rest: 5200
+    wacc: 0.069
+    investment_years: 60
+  offshore_spur:
+    # If missing, NREL ATB capex_mw_mile is used
+    capex_mw_mile:
+    wacc: 0.069
+    investment_years: 60
+  tx:
+    capex_mw_mile:
+      NY_Z_A: 1350
+      NY_Z_B: 1350
+      NY_Z_C&E: 1350
+      NY_Z_D: 1350
+      NY_Z_F: 1350
+      NY_Z_G-I: 1350
+      NY_Z_J: 1350
+      NY_Z_K: 1350
+      PJM_EMAC: 1350
+      PJM_Rest: 1350
+      NENG_Rest: 1350
+    wacc: 0.069
+    investment_years: 60
+
+# Percent expansion in planning period above and beyond existing transmission
+tx_expansion_per_period: 1.0
+
+tx_line_loss_100_miles: 0.01
+
+partial_ces: false
