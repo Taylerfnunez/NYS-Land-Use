@@ -6,7 +6,7 @@ MinCapReqConstraint,Constraint_Description,Min_MW
 5,NJ_Storage,1580
 6,PJM_Storage,1440
 7,NY_PV,6000
-8,NY_Nuclear,2700
+8,NY_Nuclear,3700
 9,PJM_Nuclear,2965
 10,NJ_Nuclear,3490
 11,ME_Wind,8000

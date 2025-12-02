@@ -239,6 +239,9 @@ def power_plot(df, sim_settings, plot_settings, save_path, sim_id):
 
 def capacity_plot(capacity_csv, sim_settings, plot_settings, save_path, sim_id):
 
+# want to plot by zone and by resource for the zones called
+
+
     df = capacity_csv[['Resource', 'Zone', 'EndCap']].copy()
     df['EndCap'] = pd.to_numeric(df['EndCap'], errors='coerce').fillna(0.0)
     df = df.sort_values('EndCap', ascending=True)
