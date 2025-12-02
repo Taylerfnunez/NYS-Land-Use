@@ -1,5 +1,5 @@
 {
-    "simulation_comments": "PG-2040-A  test run. Time clustering is set to 12 periods. This has mincap turned on, we'll see if it works. If it does, we know that adding nuclear created the problem in PG-2040-nuclear-A",
+    "simulation_comments": "Testing PG-2040 with scenarios P6/S6 have min cap policy turned on but all min capacities are set to 0.",
     "run_genx": 1, 
     "genx_outputs_dir": "input/genx/genx_outputs/test1",
     "save_path": "output",
@@ -10,7 +10,7 @@
     "genx": {
     "julia_executable": "/Users/tedwhite15/.juliaup/bin/Julia",
     "project": "/Users/tedwhite15/.julia/environments/genx", 
-    "genx_inputs_dir": "input/genx/genx_inputs/PG-2040",
+    "genx_inputs_dir": "input/genx/genx_inputs/PG-2040-test",
     "scenarios": ["p1", "p6", "p7", "s1", "s6", "s7"],
     "emissions_file": "results/emissions.csv"
   }
