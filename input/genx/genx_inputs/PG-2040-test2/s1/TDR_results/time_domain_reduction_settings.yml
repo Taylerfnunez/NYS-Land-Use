@@ -1,0 +1,15 @@
+IterativelyAddPeriods: 0
+ExtremePeriods: 1
+UseExtremePeriods: 1
+MinPeriods: 12
+MaxPeriods: 12
+DemandWeight: 1
+ClusterFuelPrices: 0
+nReps: 10
+MultiStageConcatenate: 0
+Threshold: 0.05
+TimestepsPerRepPeriod: 24
+IterateMethod: "cluster"
+ScalingMethod: "S"
+ClusterMethod: "kmeans"
+WeightTotal: 8760
