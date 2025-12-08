@@ -1,0 +1,11 @@
+This test run includes: 
+
+p1, p6, p7, s1, s6, s7
+
+p1/s1 - no policy 
+p6/s6 - min cap set to 0 for all resources 
+p7/s7 -  min cap set to a value for all reources 
+
+
+Successful scenarios: p1/s1, p6/s6
+Unsuccessful scenarios: p7/s7
