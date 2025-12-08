@@ -31,7 +31,31 @@ Fourth test:
     * P1 - no policies
     * P6 - All min cap  (except NY) resources set to 0. NY Nuclear has 1  GW of extra min cap.  ESR set to 1.0
     * P7 - All min cap  (except NY) resources set to 0. NY  Nuclear has 1  GW of extra min cap. ESR set to 0.7.
+All runs were successful
 
+
+--------------------------------------------------------------------------------
+Fifth test: 
+    * P6 - All min cap  (except NY & PJM ) resources set to 0. NY Nuclear has 1  GW of extra min cap.  ESR set to 1.0
+    * P7 - All min cap  (except NY & PJM) resources set to 0. NY  Nuclear has 1  GW of extra min cap. ESR set to 0.7.
+All runs were unsuccessful
+
+
+
+--------------------------------------------------------------------------------
+Fifth test: 
+    * P6 - Only PJM min cap resources were set to 0. NY Nuclear has 1  GW of extra min cap.  ESR set to 1.0
+    * P7 - Only PJM min cap resources were set to 0. NY  Nuclear has 1  GW of extra min cap. ESR set to 0.7.
+All runs were successful - looks like PJM is what's causing issues. 
+
+
+
+
+--------------------------------------------------------------------------------
+Sixth test: 
+    * P6 - Only PJM_OSW min cap resources were set to 0. NY Nuclear has 1  GW of extra min cap.  ESR set to 1.0
+    * P7 - Only PJM_OSW min cap resources were set to 0. NY  Nuclear has 1  GW of extra min cap. ESR set to 0.7.
+All runs were successful - looks like PJM_OSW is what's causing the issue. 
 
 
 
