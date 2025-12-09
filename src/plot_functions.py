@@ -9,86 +9,144 @@ from collections import defaultdict
           # EMISSIONS PLOT #
 ##########################################
 
+
 def emissions_plot(df, sim_settings, plot_settings, save_path, sim_id):
-    # Remove the 'AnnualSum' row 
-    df = df[df['Zone'] != 'AnnualSum']
+    """
+    Plot emissions over time.
+
+    Assumes emissions.csv has columns like:
+      Zone, NY_A, NY_B, ..., PJM_EMAC, NENG_Rest, Total
+
+    plot_settings options:
+      - fig_size: [w, h]
+      - dpi: int
+      - zone_aggregation_method: 0, 1, or 2 (as before)
+      - include_external_zones: 0/1 (default 1)
+      - external_zones: list of zone column names to treat as "external"
+                        (default ["PJM_EMAC", "PJM_Rest", "NENG_Rest"])
+      - zone_label_map: mapping from column name to pretty label
+                        e.g. {"NY_A": "Zone A", "PJM_Rest": "Zone PJM_Rest"}
+    """
+
+    # Remove the 'AnnualSum' row if present
+    df = df[df["Zone"] != "AnnualSum"].copy()
 
     # Set the time index
-    df = df.set_index('Zone')
+    df = df.set_index("Zone")
 
     # Convert all other columns to numeric
-    df = df.apply(pd.to_numeric)
+    df = df.apply(pd.to_numeric, errors="coerce")
 
-    fig_size = plot_settings["fig_size"]
-    dpi = plot_settings["dpi"]
-    zone_aggregation_method = plot_settings["zone_aggregation_method"]
+    fig_size = plot_settings.get("fig_size", [10, 6])
+    dpi = plot_settings.get("dpi", 150)
+    zone_aggregation_method = plot_settings.get("zone_aggregation_method", 0)
 
-    if zone_aggregation_method == 0: 
-         plt.figure(figsize=fig_size)
-         plt.xlabel("Time")
-         plt.ylabel("Emissions (MW)")
-         x_labels = df.index[::24]  # your tick labels (strings)
-         x_positions = range(len(df.index))[::24]  # numeric positions for ticks
-         plt.xticks(x_positions, x_labels, rotation=45)      # set labels as strings
-         plt.title("Emission by Zone Over Time")
-         plt.grid(False)
-         for col in df.columns[:-1]:  # skip 'Total' 
-            plt.plot(range(len(df.index)), df[col], label=f'Zone {col}')
-         plt.legend()
-         
-         filename= os.path.join(save_path, f'{sim_id}_Emissions_by_Zone')
-         plt.savefig(filename, dpi = dpi)
-         plt.close()
-         print(f"Saved: {filename}")
+    include_external_zones = bool(plot_settings.get("include_external_zones", 1))
+    external_zones = plot_settings.get(
+        "external_zones", ["PJM_EMAC", "PJM_Rest", "NENG_Rest"]
+    )
 
-    if zone_aggregation_method == 1: 
-         plt.figure(figsize=fig_size)
-         plt.xlabel("Time")
-         plt.ylabel("Emissions (MW)")
-         x_labels = df.index[::24]  # your tick labels (strings)
-         x_positions = range(len(df.index))[::24]  # numeric positions for ticks
-         plt.xticks(x_positions, x_labels, rotation=45)   
-         plt.title("Total Emissions Over Time")
-         plt.grid(False)
-         plt.plot(range(len(df.index)), df['Total'], color= 'black')
-         
-         filename= os.path.join(save_path, f'{sim_id}_Emissions_Total')
-         plt.savefig(filename, dpi = dpi)
-         plt.close()
-         print(f"Saved: {filename}")
+    # Map from raw column name -> pretty label (optional)
+    zone_label_map = plot_settings.get("zone_label_map", {})
 
-    if zone_aggregation_method == 2: 
-         plt.figure(figsize=fig_size)
-         plt.xlabel("Time")
-         plt.ylabel("Emissions (MW)")
-         x_labels = df.index[::24]  # your tick labels (strings)
-         x_positions = range(len(df.index))[::24]  # numeric positions for ticks
-         plt.xticks(x_positions, x_labels, rotation=45)   
-         plt.title("Emission by Zone Over Time")
-         plt.grid(False)
-         for col in df.columns[:-1]:  # skip 'Total' 
-            plt.plot(range(len(df.index)), df[col], label=f'Zone {col}')
-         plt.legend()
-         
-         filename1= os.path.join(save_path, f'{sim_id}_Emissions_by_Zone')
-         plt.savefig(filename1, dpi = dpi)
-         plt.close()
-  
+    # Determine which columns are zone columns (everything except 'Total')
+    all_zone_cols = [c for c in df.columns if c != "Total"]
 
-         plt.figure(figsize=fig_size)
-         plt.xlabel("Time")
-         plt.ylabel("Emissions (MW)")
-         x_labels = df.index[::24]  # your tick labels (strings)
-         x_positions = range(len(df.index))[::24]  # numeric positions for ticks
-         plt.xticks(x_positions, x_labels, rotation=45)   
-         plt.title("Total Emissions Over Time")
-         plt.grid(False)
-         plt.plot(range(len(df.index)), df['Total'], color= 'black')
-         
-         filename2= os.path.join(save_path, f'{sim_id}_Emissions_Total')
-         plt.savefig(filename2, dpi = dpi)
-         plt.close()
-         print(f"Saved: {filename1} and {filename2}")
+    # Optionally drop external zones
+    if not include_external_zones:
+        zone_cols = [c for c in all_zone_cols if c not in external_zones]
+    else:
+        zone_cols = all_zone_cols
+
+    if not zone_cols:
+        print("No zone columns to plot in emissions_plot after filtering.")
+        return
+
+    # x-axis positions and tick thinning
+    n_steps = len(df.index)
+    x_positions = list(range(n_steps))
+    # choose a reasonable tick step (24 if we have at least 24, else ~10 ticks)
+    if n_steps >= 24:
+        tick_step = 24
+    else:
+        tick_step = max(1, n_steps // 10 or 1)
+    x_ticks = x_positions[::tick_step]
+    x_labels = df.index[::tick_step]
+
+    # ---------- Case 0: per-zone lines ----------
+    if zone_aggregation_method == 0:
+        plt.figure(figsize=fig_size)
+        plt.xlabel("Time")
+        plt.ylabel("Emissions (MW)")
+        plt.xticks(x_ticks, x_labels, rotation=45)
+        plt.title("Emissions by Zone Over Time")
+        plt.grid(False)
+
+        for col in zone_cols:
+            label = zone_label_map.get(col, f"Zone {col}")
+            plt.plot(x_positions, df[col], label=label)
+
+        plt.legend()
+        filename = os.path.join(save_path, f"{sim_id}_Emissions_by_Zone")
+        plt.savefig(filename, dpi=dpi, bbox_inches="tight")
+        plt.close()
+        print(f"Saved: {filename}")
+
+    # ---------- Case 1: total only ----------
+    if zone_aggregation_method == 1:
+        plt.figure(figsize=fig_size)
+        plt.xlabel("Time")
+        plt.ylabel("Emissions (MW)")
+        plt.xticks(x_ticks, x_labels, rotation=45)
+        plt.title("Total Emissions Over Time")
+        plt.grid(False)
+
+        if "Total" not in df.columns:
+            print("Warning: 'Total' column not found in emissions df.")
+        else:
+            plt.plot(x_positions, df["Total"], color="black", label="Total")
+
+        filename = os.path.join(save_path, f"{sim_id}_Emissions_Total")
+        plt.savefig(filename, dpi=dpi, bbox_inches="tight")
+        plt.close()
+        print(f"Saved: {filename}")
+
+    # ---------- Case 2: both per-zone + total ----------
+    if zone_aggregation_method == 2:
+        # by-zone
+        plt.figure(figsize=fig_size)
+        plt.xlabel("Time")
+        plt.ylabel("Emissions (MW)")
+        plt.xticks(x_ticks, x_labels, rotation=45)
+        plt.title("Emissions by Zone Over Time")
+        plt.grid(False)
+
+        for col in zone_cols:
+            label = zone_label_map.get(col, f"Zone {col}")
+            plt.plot(x_positions, df[col], label=label)
+
+        plt.legend()
+        filename1 = os.path.join(save_path, f"{sim_id}_Emissions_by_Zone")
+        plt.savefig(filename1, dpi=dpi, bbox_inches="tight")
+        plt.close()
+
+        # total
+        plt.figure(figsize=fig_size)
+        plt.xlabel("Time")
+        plt.ylabel("Emissions (MW)")
+        plt.xticks(x_ticks, x_labels, rotation=45)
+        plt.title("Total Emissions Over Time")
+        plt.grid(False)
+
+        if "Total" not in df.columns:
+            print("Warning: 'Total' column not found in emissions df.")
+        else:
+            plt.plot(x_positions, df["Total"], color="black", label="Total")
+
+        filename2 = os.path.join(save_path, f"{sim_id}_Emissions_Total")
+        plt.savefig(filename2, dpi=dpi, bbox_inches="tight")
+        plt.close()
+        print(f"Saved: {filename1} and {filename2}")
 
 
 
