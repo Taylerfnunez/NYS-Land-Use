@@ -282,6 +282,155 @@ def build_tech_zone_mapping(index):
 
 # CORE PLOTTING LOGIC 
 
+def _plot_power_by_zone_df(
+    df,
+    index,
+    fig_size,
+    dpi,
+    save_path,
+    sim_id,
+    technologies=None,
+    zones_order=None,
+    include_external_zones=True,
+    external_zones=None,
+    max_xticks=10,
+):
+    """
+    Create one plot per zone.
+
+    For each zone:
+      - x-axis: time steps (t1, t2, ...)
+      - lines: technologies (solar, nuclear, biomass, etc.), each aggregated
+               over all units/resources in that zone & tech.
+    """
+
+    # Normalize technologies argument
+    if isinstance(technologies, str):
+        technologies = [technologies]
+
+    if external_zones is None:
+        external_zones = ["PJM_EMAC", "PJM_Rest", "NENG_Rest"]
+
+    # Expect a 'Resource' column with 't1', 't2', ... rows
+    if "Resource" not in df.columns:
+        raise ValueError("Expected a 'Resource' column in power.csv")
+
+    # Keep only time rows (t1, t2, ...)
+    time_mask = df["Resource"].str.startswith("t")
+    time_rows = df.loc[time_mask].copy()
+    time_labels = time_rows["Resource"].tolist()
+    n_points = len(time_labels)
+
+    if n_points == 0:
+        print("No time rows (t1, t2, ...) found in power.csv. Skipping zone plots.")
+        return
+
+    # x positions are numeric; labels are t1, t2, ...
+    x_positions = list(range(n_points))
+
+    # Tick thinning
+    if max_xticks is not None and max_xticks > 0:
+        step = max(1, n_points // max_xticks)
+        tick_positions = x_positions[::step]
+        tick_labels = [time_labels[i] for i in tick_positions]
+    else:
+        tick_positions = x_positions
+        tick_labels = time_labels
+
+    # Build zone -> tech -> [resources] mapping
+    zone_tech_map = defaultdict(lambda: defaultdict(list))
+    for resource, meta in index["parsed"].items():
+        tech = meta.get("technology")
+        zone_label = compute_zone_label(meta)
+
+        if tech is None or zone_label is None:
+            continue
+
+        zone_tech_map[zone_label][tech].append(resource)
+
+    # Determine which zones we will plot
+    all_zones = list(zone_tech_map.keys())
+    if zones_order is not None:
+        zone_list = [z for z in zones_order if z in zone_tech_map]
+    else:
+        zone_list = sorted(all_zones)
+
+    # Optionally drop external zones
+    if not include_external_zones:
+        zone_list = [z for z in zone_list if z not in external_zones]
+
+    if not zone_list:
+        print("No zones to plot in zone-based power plots.")
+        return
+
+    os.makedirs(save_path, exist_ok=True)
+
+    for zone_label in zone_list:
+        tech_to_resources = zone_tech_map[zone_label]
+
+        # Restrict to specific technologies if requested
+        if technologies is not None:
+            tech_list = [t for t in technologies if t in tech_to_resources]
+        else:
+            tech_list = sorted(tech_to_resources.keys())
+
+        if not tech_list:
+            print(f"No technologies to plot for zone {zone_label}. Skipping.")
+            continue
+
+        print(f"\nPlotting zone: {zone_label}")
+        print("Technologies in this zone:", tech_list)
+
+        fig, ax = plt.subplots(figsize=fig_size)
+
+        # Add extra space on the right for the legend
+        plt.subplots_adjust(right=0.75)
+
+        any_plotted = False
+
+        for tech in tech_list:
+            resources = tech_to_resources[tech]
+            # Only keep columns that exist in df
+            cols = [r for r in resources if r in time_rows.columns]
+            if not cols:
+                print(f"  Tech {tech}: no matching columns in power.csv, skipping.")
+                continue
+
+            # Sum across all resources for this zone & tech at each time step
+            tech_series = time_rows[cols].sum(axis=1).to_numpy()
+
+            ax.plot(x_positions, tech_series, label=tech)
+            any_plotted = True
+            print(f"  Tech {tech}: plotted {len(cols)} resources.")
+
+        if not any_plotted:
+            print(f"  No data plotted for zone {zone_label}, closing figure.")
+            plt.close(fig)
+            continue
+
+        ax.set_xlabel("Time step")
+        ax.set_ylabel("Power (MW)")
+        ax.set_title(f"{zone_label} power by technology")
+
+        # Sparse x-axis labels
+        ax.set_xticks(tick_positions)
+        ax.set_xticklabels(tick_labels, rotation=45)
+
+        # Legend outside
+        ax.legend(
+            loc="center left",
+            bbox_to_anchor=(1.02, 0.5),
+            borderaxespad=0.0,
+        )
+
+        plt.tight_layout()
+
+        filename = os.path.join(save_path, f"{sim_id}_Power_Zone-{zone_label}_ByTech")
+        fig.savefig(filename, dpi=dpi, bbox_inches="tight")
+        plt.close(fig)
+        print(f"Saved: {filename}")
+
+
 def _plot_power_by_technology_df(
     df,
     index,
@@ -421,24 +570,39 @@ def _plot_power_by_technology_df(
 # POWER PLOT --(called by main.py)
 
 
+##########################################
+# POWER PLOT – PUBLIC API (called by main.py)
+##########################################
+
 def power_plot(df, sim_settings, plot_settings, save_path, sim_id):
     """
     Create power plots from power.csv according to power.json settings.
 
-    New behavior:
-      - One plot per technology (solar, nuclear, hydro, etc.)
-      - Within each plot, one line per zone (NY_A, NY_B, PJM_EMAC, NENG_Rest, ...)
-      - Optional exclusion of external zones
-      - Legend outside the plotting area
-      - Thinned x-axis labels
+    Modes (plot_settings["mode"]):
+      - "by_technology": one plot per technology; lines = zones
+      - "by_zone":       one plot per zone;       lines = technologies
+      - "both":          do both sets of plots
+
+    Other plot_settings keys:
+      - fig_size: [width, height]
+      - dpi: integer
+      - technologies: list of technology names to include (None = all)
+      - zones_order: list of zone labels to control plotting order
+      - include_external_zones: 0/1 (default 1)
+      - external_zones: ["PJM_EMAC", "PJM_Rest", "NENG_Rest"]
+      - max_xticks: maximum number of x tick labels
     """
 
     # Figure size & DPI from power.json
     fig_size = plot_settings.get("fig_size", [10, 6])
     dpi = plot_settings.get("dpi", 150)
 
-    # Technologies to plot (None = all)
+    # Which plotting mode(s)?
+    mode = plot_settings.get("mode", "by_technology")  # "by_technology", "by_zone", "both"
+
+    # Technologies to plot (None = all detected)
     technologies = plot_settings.get("technologies", None)
+
     # Zone display order (optional)
     zones_order = plot_settings.get("zones_order", None)
 
@@ -454,19 +618,37 @@ def power_plot(df, sim_settings, plot_settings, save_path, sim_id):
     # Build index (region/zone/technology) from column names
     index = build_index_from_power_df(df)
 
-    _plot_power_by_technology_df(
-        df=df,
-        index=index,
-        fig_size=fig_size,
-        dpi=dpi,
-        save_path=save_path,
-        sim_id=sim_id,
-        technologies=technologies,
-        zones_order=zones_order,
-        include_external_zones=include_external_zones,
-        external_zones=external_zones,
-        max_xticks=max_xticks,
-    )
+    # 1) Technology-based plots: one figure per technology, lines = zones
+    if mode in ("by_technology", "both"):
+        _plot_power_by_technology_df(
+            df=df,
+            index=index,
+            fig_size=fig_size,
+            dpi=dpi,
+            save_path=save_path,
+            sim_id=sim_id,
+            technologies=technologies,
+            zones_order=zones_order,
+            include_external_zones=include_external_zones,
+            external_zones=external_zones,
+            max_xticks=max_xticks,
+        )
+
+    # 2) Zone-based plots: one figure per zone, lines = technologies
+    if mode in ("by_zone", "both"):
+        _plot_power_by_zone_df(
+            df=df,
+            index=index,
+            fig_size=fig_size,
+            dpi=dpi,
+            save_path=save_path,
+            sim_id=sim_id,
+            technologies=technologies,
+            zones_order=zones_order,
+            include_external_zones=include_external_zones,
+            external_zones=external_zones,
+            max_xticks=max_xticks,
+        )
 
 
 
