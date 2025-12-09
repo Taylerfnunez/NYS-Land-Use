@@ -1,6 +1,9 @@
+
 import matplotlib.pyplot as plt
 import os
 import pandas as pd
+from collections import defaultdict
+
 
 ##########################################
           # EMISSIONS PLOT #
@@ -89,148 +92,389 @@ def emissions_plot(df, sim_settings, plot_settings, save_path, sim_id):
 
 
 
+
+
+
+
 ##########################################
-          # POWER PLOT #
+          # POWER PLOTS #
 ##########################################
+
+
+
+# POWER PLOT – HELPERS
+
+def infer_technology(tokens):
+    """
+    Given the tail tokens of a resource name (after region/zone),
+    infer a high-level technology label like 'solar', 'nuclear', etc.
+    """
+    tokens_lower = [t.lower() for t in tokens]
+    joined = "_".join(tokens_lower)
+
+    # Solar: utilitypv, distpv, solar_pv, photovoltaic, etc.
+    if (
+        any("solar" in t for t in tokens_lower)
+        or "pv" in joined          # catches utilitypv, distpv, etc.
+        or "photovoltaic" in joined
+    ):
+        return "solar"
+
+    # Land-based / onshore wind
+    if any("landbasedwind" in t or "landbased_wind" in t for t in tokens_lower):
+        return "land_based_wind"
+    if "onshore" in joined and "wind" in joined:
+        return "land_based_wind"
+
+    # Offshore wind
+    if "offshore" in joined and "wind" in joined:
+        return "offshore_wind"
+
+    # Hydro / hydroelectric, including small_hydroelectric
+    if any("hydro" in t or "hydroelectric" in t for t in tokens_lower):
+        return "hydroelectric"
+
+    # Nuclear
+    if any("nuclear" in t for t in tokens_lower):
+        return "nuclear"
+
+    # Natural gas
+    if ("gas" in joined) or ("ngcc" in joined) or ("ngct" in joined):
+        return "natural_gas"
+
+    # Coal
+    if "coal" in joined:
+        return "coal"
+
+    # Storage / battery
+    if "battery" in joined or "storage" in joined:
+        return "storage"
+
+    # Biomass
+    if "biomass" in joined:
+        return "biomass"
+
+    # Fallback: first token
+    return tokens_lower[0] if tokens_lower else None
+
+
+def parse_resource_name(name):
+    """
+    Parse a PowerGenome-style resource name into region, zone, technology.
+
+    Examples:
+      NY_Z_A_landbasedwind_class1_advanced_1
+      NY_Z_D_small_hydroelectric_1
+      PJM_EMAC_utilitypv_class1_advanced_1
+
+    Returns:
+      {"region": ..., "zone": ..., "technology": ...}
+    """
+    parts = name.split("_")
+    if not parts:
+        return {"region": None, "zone": None, "technology": None}
+
+    region = parts[0]
+    idx = 1
+    zone = None
+
+    # Special handling for NY with explicit 'Z'
+    if region == "NY" and idx < len(parts) and parts[idx] == "Z":
+        idx += 1
+        if idx < len(parts):
+            zone = parts[idx]
+            idx += 1
+    else:
+        # For PJM, NENG, etc.: decide if second token is zone or tech
+        if idx < len(parts):
+            second = parts[idx]
+            second_l = second.lower()
+
+            tech_like_keywords = (
+                "solar", "wind", "hydro", "hydroelectric",
+                "nuclear", "gas", "coal", "battery", "storage",
+                "pv", "biomass", "diesel", "geothermal", "oil"
+            )
+
+            if any(k in second_l for k in tech_like_keywords):
+                # second token is actually technology
+                pass
+            else:
+                # treat second token as zone (e.g. EMAC, Rest)
+                zone = second
+                idx += 1
+
+    # Everything after region/zone is tech-related
+    tech_tokens = parts[idx:]
+    technology = infer_technology(tech_tokens)
+
+    return {
+        "region": region,
+        "zone": zone,
+        "technology": technology,
+    }
+
+
+def compute_zone_label(meta):
+    """
+    Turn region + zone into a label like:
+      NY + A      -> 'NY_A'
+      PJM + EMAC  -> 'PJM_EMAC'
+      NENG + Rest -> 'NENG_Rest'
+    If zone is None, returns just the region.
+    """
+    region = meta.get("region")
+    zone = meta.get("zone")
+    if region is None:
+        return None
+    if zone is None:
+        return region
+    return f"{region}_{zone}"
+
+
+def build_index_from_power_df(df):
+    """
+    Given the raw power.csv DataFrame, build an index dictionary:
+      index = {
+        "parsed": {resource_name: {"region": ..., "zone": ..., "technology": ...}},
+        "by_technology": {tech: [resource_names...]},
+      }
+    Only uses column names that look like resources.
+    """
+    parsed = {}
+    for col in df.columns:
+        if col in ("Resource", "Zone", "AnnualSum", "Total"):
+            continue
+        meta = parse_resource_name(col)
+        parsed[col] = meta
+
+    by_technology = defaultdict(list)
+    for resource, meta in parsed.items():
+        tech = meta.get("technology")
+        if tech is not None:
+            by_technology[tech].append(resource)
+
+    return {
+        "parsed": parsed,
+        "by_technology": dict(by_technology),
+    }
+
+
+def build_tech_zone_mapping(index):
+    """
+    From the `index` dict, build:
+      mapping[technology][zone_label] = [resource_name1, resource_name2, ...]
+    """
+    mapping = defaultdict(lambda: defaultdict(list))
+    parsed = index["parsed"]
+
+    for resource, meta in parsed.items():
+        tech = meta.get("technology")
+        zone_label = compute_zone_label(meta)
+
+        if tech is None or zone_label is None:
+            continue
+
+        mapping[tech][zone_label].append(resource)
+
+    return mapping
+
+
+# CORE PLOTTING LOGIC 
+
+def _plot_power_by_technology_df(
+    df,
+    index,
+    fig_size,
+    dpi,
+    save_path,
+    sim_id,
+    technologies=None,
+    zones_order=None,
+    include_external_zones=True,
+    external_zones=None,
+    max_xticks=10,
+):
+    """
+    Internal helper: create one plot per technology.
+
+    df is the raw power.csv DataFrame (as read in main.py).
+    """
+
+    # Normalize technologies argument
+    if isinstance(technologies, str):
+        technologies = [technologies]
+
+    if external_zones is None:
+        external_zones = ["PJM_EMAC", "PJM_Rest", "NENG_Rest"]
+
+    # Expect a 'Resource' column with 't1', 't2', ... rows
+    if "Resource" not in df.columns:
+        raise ValueError("Expected a 'Resource' column in power.csv")
+
+    # Keep only time rows (t1, t2, ...)
+    time_mask = df["Resource"].str.startswith("t")
+    time_rows = df.loc[time_mask].copy()
+    time_labels = time_rows["Resource"].tolist()
+    n_points = len(time_labels)
+
+    if n_points == 0:
+        print("No time rows (t1, t2, ...) found in power.csv. Skipping power plots.")
+        return
+
+    # x positions are numeric; labels are t1, t2, ...
+    x_positions = list(range(n_points))
+
+    # Tick thinning
+    if max_xticks is not None and max_xticks > 0:
+        step = max(1, n_points // max_xticks)
+        tick_positions = x_positions[::step]
+        tick_labels = [time_labels[i] for i in tick_positions]
+    else:
+        tick_positions = x_positions
+        tick_labels = time_labels
+
+    tech_zone_map = build_tech_zone_mapping(index)
+
+    # Determine which technologies to plot
+    if technologies is None:
+        technologies = sorted(tech_zone_map.keys())
+
+    # Ensure output dir exists
+    os.makedirs(save_path, exist_ok=True)
+
+    for tech in technologies:
+        if tech not in tech_zone_map:
+            print(f"Skipping {tech}: no resources found in tech_zone_map.")
+            continue
+
+        zone_to_resources = tech_zone_map[tech]
+
+        # Determine plotting order for zones
+        if zones_order is not None:
+            zone_list = [z for z in zones_order if z in zone_to_resources]
+        else:
+            zone_list = sorted(zone_to_resources.keys())
+
+        # Optionally drop external zones
+        if not include_external_zones:
+            zone_list = [z for z in zone_list if z not in external_zones]
+
+        if not zone_list:
+            print(f"No zones to plot for technology {tech}.")
+            continue
+
+        print(f"\nPlotting technology: {tech}")
+        print("Zones in this tech:", zone_list)
+
+        fig, ax = plt.subplots(figsize=fig_size)
+
+        # Add extra space on the right for the legend
+        plt.subplots_adjust(right=0.75)
+
+        any_plotted = False
+
+        for zone_label in zone_list:
+            resources = zone_to_resources[zone_label]
+            # Only keep columns that exist in df
+            cols = [r for r in resources if r in time_rows.columns]
+            if not cols:
+                print(f"  Zone {zone_label}: no matching columns in power.csv, skipping.")
+                continue
+
+            # Sum across all resources for this tech & zone at each time step
+            zone_series = time_rows[cols].sum(axis=1).to_numpy()
+
+            ax.plot(x_positions, zone_series, label=zone_label)
+            any_plotted = True
+            print(f"  Zone {zone_label}: plotted {len(cols)} resources.")
+
+        if not any_plotted:
+            print(f"  No data plotted for technology {tech}, closing figure.")
+            plt.close(fig)
+            continue
+
+        ax.set_xlabel("Time step")
+        ax.set_ylabel("Power (MW)")
+        ax.set_title(f"{tech} power by zone")
+
+        # Sparse x-axis labels
+        ax.set_xticks(tick_positions)
+        ax.set_xticklabels(tick_labels, rotation=45)
+
+        # Legend outside
+        ax.legend(
+            loc="center left",
+            bbox_to_anchor=(1.02, 0.5),
+            borderaxespad=0.0,
+        )
+
+        plt.tight_layout()
+
+        filename = os.path.join(save_path, f"{sim_id}_Power_{tech}_ByZone")
+        fig.savefig(filename, dpi=dpi, bbox_inches="tight")
+        plt.close(fig)
+        print(f"Saved: {filename}")
+
+
+
+# POWER PLOT --(called by main.py)
+
 
 def power_plot(df, sim_settings, plot_settings, save_path, sim_id):
     """
     Create power plots from power.csv according to power.json settings.
 
-    zone_aggregation_method:
-      0: For each zone, one plot with one line per *unit* (zone-tech-unit).
-      1: For each zone, one plot with one line per *technology* (units summed).
-      2: For each zone, do both (so 2 plots per zone).
-
+    New behavior:
+      - One plot per technology (solar, nuclear, hydro, etc.)
+      - Within each plot, one line per zone (NY_A, NY_B, PJM_EMAC, NENG_Rest, ...)
+      - Optional exclusion of external zones
+      - Legend outside the plotting area
+      - Thinned x-axis labels
     """
 
-    # --- 1. Clean and set time index ---
+    # Figure size & DPI from power.json
+    fig_size = plot_settings.get("fig_size", [10, 6])
+    dpi = plot_settings.get("dpi", 150)
 
-    # Drop the rows that are not time steps
-    if "Resource" in df.columns:
-        df = df[~df["Resource"].isin(["Zone", "AnnualSum"])]
-        df = df.set_index("Resource")
-    else:
-        df = df.copy()
+    # Technologies to plot (None = all)
+    technologies = plot_settings.get("technologies", None)
+    # Zone display order (optional)
+    zones_order = plot_settings.get("zones_order", None)
 
-    # Convert remaining columns to numeric
-    df = df.apply(pd.to_numeric, errors="coerce")
+    # External zone handling
+    include_external_zones = bool(plot_settings.get("include_external_zones", 1))
+    external_zones = plot_settings.get(
+        "external_zones", ["PJM_EMAC", "PJM_Rest", "NENG_Rest"]
+    )
 
-    fig_size = plot_settings["fig_size"]
-    dpi = plot_settings["dpi"]
-    zone_aggregation_method = plot_settings["zone_aggregation_method"]
+    # X-axis label density
+    max_xticks = int(plot_settings.get("max_xticks", 10))
 
-    # Basic x-axis: integer positions, labels every 24 steps (or reasonable fallback)
-    x_positions = range(len(df.index))
-    tick_step = 24 if len(df.index) >= 24 else max(1, len(df.index) // 10 or 1)
-    x_labels = df.index[::tick_step]
-    x_ticks = list(range(len(df.index)))[::tick_step]
+    # Build index (region/zone/technology) from column names
+    index = build_index_from_power_df(df)
 
-    # --- 2. Helper: parse column names into (zone, tech, unit) ---
+    _plot_power_by_technology_df(
+        df=df,
+        index=index,
+        fig_size=fig_size,
+        dpi=dpi,
+        save_path=save_path,
+        sim_id=sim_id,
+        technologies=technologies,
+        zones_order=zones_order,
+        include_external_zones=include_external_zones,
+        external_zones=external_zones,
+        max_xticks=max_xticks,
+    )
 
-    def parse_zone_tech(colname):
-        """
-        Parse column names of the form:
-          NY_Z_A_conventional_hydroelectric_1
-          NENG_Rest_utilitypv_class1_2
-        into (zone, tech, unit).
 
-        Heuristic tailored to the sample file:
-          - If name starts with 'NY_Z_', zone = first 3 tokens, else first 2.
-          - Last token after '_' is assumed to be the unit index.
-        """
-        if colname in ("Resource", "Total"):
-            return None, None, None
 
-        base, unit = colname.rsplit("_", 1)  # split off unit index
-        parts = base.split("_")
-
-        if parts[0] == "NY" and len(parts) >= 3:
-            zone_parts = parts[:3]      # e.g. NY_Z_A, NY_Z_G-I, NY_Z_C&E
-            tech_parts = parts[3:]
-        else:
-            zone_parts = parts[:2]      # e.g. NENG_Rest, PJM_EMAC, PJM_Rest
-            tech_parts = parts[2:]
-
-        zone = "_".join(zone_parts)
-        tech = "_".join(tech_parts) if tech_parts else "Unknown"
-
-        return zone, tech, unit
-
-    # --- 3. Build mapping: zone -> list of (colname, tech, unit) ---
-
-    zone_to_cols = {}
-
-    for col in df.columns:
-        if col == "Total":
-            continue  # we don't treat Total as a zone/tech/unit column here
-        zone, tech, unit = parse_zone_tech(col)
-        if zone is None:
-            continue
-        zone_to_cols.setdefault(zone, []).append((col, tech, unit))
-
-    # --- 4. For each zone, build dataframes for:
-    #       - by_unit: original columns for that zone
-    #       - by_tech: sum across units for each technology
-    # -------------------------------------------------------
-
-    for zone, cols_info in zone_to_cols.items():
-        # All column names for this zone
-        zone_cols = [c for (c, t, u) in cols_info]
-
-        # Dataframe with only that zone's columns (by unit)
-        df_zone_by_unit = df[zone_cols].copy()
-
-        # Dataframe aggregated by technology (sum across units)
-        tech_to_cols = {}
-        for (col, tech, unit) in cols_info:
-            tech_to_cols.setdefault(tech, []).append(col)
-
-        df_zone_by_tech = pd.DataFrame(index=df.index)
-        for tech, tech_cols in tech_to_cols.items():
-            df_zone_by_tech[tech] = df[tech_cols].sum(axis=1)
-
-        # --- 5. Plot according to zone_aggregation_method ---
-
-        # 0) One plot per zone, one line per unit (no aggregation)
-        if zone_aggregation_method in (0, 2):
-            plt.figure(figsize=fig_size)
-            plt.xlabel("Time")
-            plt.ylabel("Power (MW)")
-            plt.xticks(x_ticks, x_labels, rotation=45)
-            plt.title(f"Power by Unit – Zone {zone}")
-            plt.grid(False)
-
-            for (col, tech, unit) in cols_info:
-                label = f"{tech} (unit {unit})"
-                plt.plot(x_positions, df[col], label=label)
-
-            plt.legend(fontsize="small", ncol=2)
-            filename = os.path.join(save_path, f"{sim_id}_Power_Zone-{zone}_ByUnit")
-            plt.savefig(filename, dpi=dpi, bbox_inches="tight")
-            plt.close()
-            print(f"Saved: {filename}")
-
-        # 1) One plot per zone, one line per technology (aggregated over units)
-        if zone_aggregation_method in (1, 2):
-            plt.figure(figsize=fig_size)
-            plt.xlabel("Time")
-            plt.ylabel("Power (MW)")
-            plt.xticks(x_ticks, x_labels, rotation=45)
-            plt.title(f"Power by Technology – Zone {zone}")
-            plt.grid(False)
-
-            for tech in df_zone_by_tech.columns:
-                plt.plot(x_positions, df_zone_by_tech[tech], label=tech)
-
-            plt.legend(fontsize="small", ncol=2)
-            filename = os.path.join(save_path, f"{sim_id}_Power_Zone-{zone}_ByTech")
-            plt.savefig(filename, dpi=dpi, bbox_inches="tight")
-            plt.close()
-            print(f"Saved: {filename}")
 
 
         
+
+
 
 ##########################################
 # CAPACITY PLOT FUNCTIONS
