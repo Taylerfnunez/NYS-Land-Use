@@ -410,7 +410,7 @@ def _plot_power_by_zone_df(
 
         ax.set_xlabel("Time step")
         ax.set_ylabel("Power (MW)")
-        ax.set_title(f"{zone_label} power by technology")
+        ax.set_title(f"{zone_label} Power by technology")
 
         # Sparse x-axis labels
         ax.set_xticks(tick_positions)
@@ -545,7 +545,7 @@ def _plot_power_by_technology_df(
 
         ax.set_xlabel("Time step")
         ax.set_ylabel("Power (MW)")
-        ax.set_title(f"{tech} power by zone")
+        ax.set_title(f"{tech} Power by zone")
 
         # Sparse x-axis labels
         ax.set_xticks(tick_positions)
@@ -567,12 +567,278 @@ def _plot_power_by_technology_df(
 
 
 
+
+
+def _plot_power_total_by_technology_df(
+    df,
+    index,
+    fig_size,
+    dpi,
+    save_path,
+    sim_id,
+    technologies=None,
+    include_external_zones=True,
+    external_zones=None,
+    max_xticks=10,
+):
+    """
+    Create a single plot where each line is a technology (solar, nuclear, etc.)
+    and the value is the TOTAL power across all zones for that technology
+    at each time step.
+
+    If include_external_zones is False, we drop resources whose zone is in
+    external_zones (e.g. PJM_EMAC, NENG_Rest, etc.).
+    """
+
+    # Normalize technologies argument
+    if isinstance(technologies, str):
+        technologies = [technologies]
+
+    if external_zones is None:
+        external_zones = ["PJM_EMAC", "PJM_Rest", "NENG_Rest"]
+
+    # Expect a 'Resource' column with 't1', 't2', ... rows
+    if "Resource" not in df.columns:
+        raise ValueError("Expected a 'Resource' column in power.csv")
+
+    # Keep only time rows (t1, t2, ...)
+    time_mask = df["Resource"].str.startswith("t")
+    time_rows = df.loc[time_mask].copy()
+    time_labels = time_rows["Resource"].tolist()
+    n_points = len(time_labels)
+
+    if n_points == 0:
+        print("No time rows (t1, t2, ...) found in power.csv. Skipping total-by-tech plot.")
+        return
+
+    # x positions are numeric; labels are t1, t2, ...
+    x_positions = list(range(n_points))
+
+    # Tick thinning
+    if max_xticks is not None and max_xticks > 0:
+        step = max(1, n_points // max_xticks)
+        tick_positions = x_positions[::step]
+        tick_labels = [time_labels[i] for i in tick_positions]
+    else:
+        tick_positions = x_positions
+        tick_labels = time_labels
+
+    # Build tech -> [resources] (optionally dropping external zones)
+    tech_to_resources = defaultdict(list)
+    for resource, meta in index["parsed"].items():
+        tech = meta.get("technology")
+        zone_label = compute_zone_label(meta)
+
+        if tech is None or zone_label is None:
+            continue
+
+        if (not include_external_zones) and (zone_label in external_zones):
+            continue
+
+        tech_to_resources[tech].append(resource)
+
+    # Restrict to specific technologies if requested
+    if technologies is not None:
+        tech_list = [t for t in technologies if t in tech_to_resources]
+    else:
+        tech_list = sorted(tech_to_resources.keys())
+
+    if not tech_list:
+        print("No technologies to plot in total-by-technology plot.")
+        return
+
+    os.makedirs(save_path, exist_ok=True)
+
+    print("\nPlotting TOTAL power by technology (all zones aggregated).")
+    print("Technologies:", tech_list)
+
+    fig, ax = plt.subplots(figsize=fig_size)
+
+    # Add extra space on the right for the legend
+    plt.subplots_adjust(right=0.75)
+
+    any_plotted = False
+
+    for tech in tech_list:
+        resources = tech_to_resources[tech]
+        cols = [r for r in resources if r in time_rows.columns]
+        if not cols:
+            print(f"  Tech {tech}: no matching columns in power.csv, skipping.")
+            continue
+
+        # Sum across all resources for this technology at each time step
+        tech_series = time_rows[cols].sum(axis=1).to_numpy()
+
+        ax.plot(x_positions, tech_series, label=tech)
+        any_plotted = True
+        print(f"  Tech {tech}: plotted {len(cols)} resources.")
+
+    if not any_plotted:
+        print("No data plotted in total-by-technology figure, closing.")
+        plt.close(fig)
+        return
+
+    ax.set_xlabel("Time step")
+    ax.set_ylabel("Power (MW)")
+    ax.set_title("Total power by technology (all zones)")
+
+    # Sparse x-axis labels
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels, rotation=45)
+
+    # Legend outside
+    ax.legend(
+        loc="center left",
+        bbox_to_anchor=(1.02, 0.5),
+        borderaxespad=0.0,
+    )
+
+    plt.tight_layout()
+
+    filename = os.path.join(save_path, f"{sim_id}_Power_Total_ByTechnology")
+    fig.savefig(filename, dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved: {filename}")
+
+
+
+def _plot_power_total_by_zone_df(
+    df,
+    index,
+    fig_size,
+    dpi,
+    save_path,
+    sim_id,
+    zones_order=None,
+    include_external_zones=True,
+    external_zones=None,
+    max_xticks=10,
+):
+    """
+    Create a single plot where each line is a zone
+    (NY_A, NY_B, PJM_EMAC, etc.) and the value is the TOTAL power
+    across all technologies in that zone at each time step.
+
+    If include_external_zones is False, we drop resources whose zone is in
+    external_zones (e.g. PJM_EMAC, NENG_Rest, etc.).
+    """
+
+    if external_zones is None:
+        external_zones = ["PJM_EMAC", "PJM_Rest", "NENG_Rest"]
+
+    # Expect a 'Resource' column with 't1', 't2', ... rows
+    if "Resource" not in df.columns:
+        raise ValueError("Expected a 'Resource' column in power.csv")
+
+    # Keep only time rows (t1, t2, ...)
+    time_mask = df["Resource"].str.startswith("t")
+    time_rows = df.loc[time_mask].copy()
+    time_labels = time_rows["Resource"].tolist()
+    n_points = len(time_labels)
+
+    if n_points == 0:
+        print("No time rows (t1, t2, ...) found in power.csv. "
+              "Skipping total-by-zone plot.")
+        return
+
+    # x positions are numeric; labels are t1, t2, ...
+    x_positions = list(range(n_points))
+
+    # Tick thinning
+    if max_xticks is not None and max_xticks > 0:
+        step = max(1, n_points // max_xticks)
+        tick_positions = x_positions[::step]
+        tick_labels = [time_labels[i] for i in tick_positions]
+    else:
+        tick_positions = x_positions
+        tick_labels = time_labels
+
+    # Build zone -> [resources] mapping (optionally drop external zones)
+    from collections import defaultdict
+    zone_to_resources = defaultdict(list)
+    for resource, meta in index["parsed"].items():
+        zone_label = compute_zone_label(meta)
+        if zone_label is None:
+            continue
+        if (not include_external_zones) and (zone_label in external_zones):
+            continue
+        zone_to_resources[zone_label].append(resource)
+
+    if not zone_to_resources:
+        print("No zones/resources to plot in total-by-zone plot.")
+        return
+
+    # Determine which zones to plot and order
+    all_zones = list(zone_to_resources.keys())
+    if zones_order is not None:
+        zone_list = [z for z in zones_order if z in zone_to_resources]
+    else:
+        zone_list = sorted(all_zones)
+
+    if not zone_list:
+        print("No zones to plot in total-by-zone plot after filtering/order.")
+        return
+
+    os.makedirs(save_path, exist_ok=True)
+
+    print("\nPlotting TOTAL power by zone (all technologies aggregated).")
+    print("Zones:", zone_list)
+
+    fig, ax = plt.subplots(figsize=fig_size)
+
+    # Add extra space on the right for the legend
+    plt.subplots_adjust(right=0.75)
+
+    any_plotted = False
+
+    for zone_label in zone_list:
+        resources = zone_to_resources[zone_label]
+        cols = [r for r in resources if r in time_rows.columns]
+        if not cols:
+            print(f"  Zone {zone_label}: no matching columns in power.csv, skipping.")
+            continue
+
+        # Sum across all resources for this zone at each time step
+        zone_series = time_rows[cols].sum(axis=1).to_numpy()
+
+        ax.plot(x_positions, zone_series, label=zone_label)
+        any_plotted = True
+        print(f"  Zone {zone_label}: plotted {len(cols)} resources.")
+
+    if not any_plotted:
+        print("No data plotted in total-by-zone figure, closing.")
+        plt.close(fig)
+        return
+
+    ax.set_xlabel("Time step")
+    ax.set_ylabel("Power (MW)")
+    ax.set_title("Total power by zone (all technologies)")
+
+    # Sparse x-axis labels
+    ax.set_xticks(tick_positions)
+    ax.set_xticklabels(tick_labels, rotation=45)
+
+    # Legend outside
+    ax.legend(
+        loc="center left",
+        bbox_to_anchor=(1.02, 0.5),
+        borderaxespad=0.0,
+    )
+
+    plt.tight_layout()
+
+    filename = os.path.join(save_path, f"{sim_id}_Power_Total_ByZone")
+    fig.savefig(filename, dpi=dpi, bbox_inches="tight")
+    plt.close(fig)
+    print(f"Saved: {filename}")
+
+
+
+
+
 # POWER PLOT --(called by main.py)
 
 
-##########################################
-# POWER PLOT – PUBLIC API (called by main.py)
-##########################################
 
 def power_plot(df, sim_settings, plot_settings, save_path, sim_id):
     """
@@ -583,14 +849,11 @@ def power_plot(df, sim_settings, plot_settings, save_path, sim_id):
       - "by_zone":       one plot per zone;       lines = technologies
       - "both":          do both sets of plots
 
-    Other plot_settings keys:
-      - fig_size: [width, height]
-      - dpi: integer
-      - technologies: list of technology names to include (None = all)
-      - zones_order: list of zone labels to control plotting order
-      - include_external_zones: 0/1 (default 1)
-      - external_zones: ["PJM_EMAC", "PJM_Rest", "NENG_Rest"]
-      - max_xticks: maximum number of x tick labels
+    Additional summary options:
+      - total_by_technology (0/1): if 1, make ONE plot with lines = technologies,
+                                   totals across all zones.
+      - total_by_zone (0/1):       if 1, make ONE plot with lines = zones,
+                                   totals across all technologies.
     """
 
     # Figure size & DPI from power.json
@@ -614,6 +877,10 @@ def power_plot(df, sim_settings, plot_settings, save_path, sim_id):
 
     # X-axis label density
     max_xticks = int(plot_settings.get("max_xticks", 10))
+
+    # Summary plot flags
+    total_by_technology_flag = bool(plot_settings.get("total_by_technology", 1))
+    total_by_zone_flag = bool(plot_settings.get("total_by_zone", 1))
 
     # Build index (region/zone/technology) from column names
     index = build_index_from_power_df(df)
@@ -650,8 +917,35 @@ def power_plot(df, sim_settings, plot_settings, save_path, sim_id):
             max_xticks=max_xticks,
         )
 
+    # 3) SINGLE global plot: lines = technologies, totals across all zones
+    if total_by_technology_flag:
+        _plot_power_total_by_technology_df(
+            df=df,
+            index=index,
+            fig_size=fig_size,
+            dpi=dpi,
+            save_path=save_path,
+            sim_id=sim_id,
+            technologies=technologies,
+            include_external_zones=include_external_zones,
+            external_zones=external_zones,
+            max_xticks=max_xticks,
+        )
 
-
+    # 4) SINGLE global plot: lines = zones, totals across all technologies
+    if total_by_zone_flag:
+        _plot_power_total_by_zone_df(
+            df=df,
+            index=index,
+            fig_size=fig_size,
+            dpi=dpi,
+            save_path=save_path,
+            sim_id=sim_id,
+            zones_order=zones_order,
+            include_external_zones=include_external_zones,
+            external_zones=external_zones,
+            max_xticks=max_xticks,
+        )
 
 
         

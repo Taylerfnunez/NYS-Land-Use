@@ -1,9 +1,13 @@
 {
   "fig_size": [10, 6],
   "dpi": 150,
+  "mode": "both",
+  "total_by_technology": 1,
+  "total_by_zone": 1,
   "technologies": [ "solar", "land_based_wind", "offshore_wind", "hydroelectric", "nuclear", "natural_gas", "coal", "storage", "biomass"],
   "zones_order": ["NY_A", "NY_B", "NY_C&E", "NY_D", "NY_E", "NY_F", "NY_G-I", "PJM_EMAC", "PJM_Rest", "NENG_Rest"],
   "include_external_zones": 0,
   "external_zones": ["PJM_EMAC", "PJM_Rest", "NENG_Rest"],
   "max_xticks": 12
+
 }
