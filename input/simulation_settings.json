@@ -1,17 +1,17 @@
 {
-    "simulation_comments": "Testing PG-2040 with P6 and P7 Min capcity = 0 for NY_nuclear, NJ_nuclear and PJM_nuclear. P7 have a new ESR of 0.7.  Also changed TDR to 3 rep days",
+    "simulation_comments": "Testing Plotting code for power plots",
     "run_genx": 1, 
     "genx_outputs_dir": "input/genx/genx_outputs/test1",
     "save_path": "output",
-    "generate_emissions_plot": 0,
+    "generate_emissions_plot": 1,
     "generate_capacity_plot": 0, 
-    "generate_power_plot": 0, 
+    "generate_power_plot": 1, 
     "generate_demand_plot": 0, 
     "genx": {
     "julia_executable": "/Users/tedwhite15/.juliaup/bin/Julia",
     "project": "/Users/tedwhite15/.julia/environments/genx", 
     "genx_inputs_dir": "input/genx/genx_inputs/PG-2040-test2",
-    "scenarios": ["p7", "p6"],
+    "scenarios": ["p7"],
     "emissions_file": "results/emissions.csv"
   }
     
