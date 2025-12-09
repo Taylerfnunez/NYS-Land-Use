@@ -9,6 +9,7 @@
     "y_label_by_zone": "Capacity (MW)",
     "all zones": 1,
     "specific zone": 0,
-    "zones_specific": [1,2,5]
+    "zones_specific": [1,2,5],
+    "Recource Types": ["Solar", "Wind", "Hydro"]
     
  }

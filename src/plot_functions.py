@@ -240,45 +240,119 @@ def power_plot(df, sim_settings, plot_settings, save_path, sim_id):
 def capacity_plot(capacity_csv, sim_settings, plot_settings, save_path, sim_id):
 
 # want to plot by zone and by resource for the zones called
+    zones_specific = plot_settings["zones_specific"]
+    fig_size = plot_settings["fig_size"]
+    dpi = plot_settings["dpi"]
+    resource_types = plot_settings["Recource Types"]
 
+    df = capacity_csv.copy()
 
-    df = capacity_csv[['Resource', 'Zone', 'EndCap']].copy()
-    df['EndCap'] = pd.to_numeric(df['EndCap'], errors='coerce').fillna(0.0)
-    df = df.sort_values('EndCap', ascending=True)
+    resources = ["hydro", "gas", "wind", "utilitypv", "nuclear", "trans", "biomass", "distributed", "photovoltaic"]
 
-    one_zone = plot_settings["all zones"]
-    multiple_zones = plot_settings["zones_specific"]
+    import re
 
-    if one_zone == 1:
-        for zone in df['Zone'].unique():
-            zone_df = df[df['Zone'] == zone]
-            plt.figure(figsize=(10, max(4, len(zone_df) * 0.15)))
-            plt.barh(zone_df['Resource'], zone_df['EndCap'], color='tab:blue')
-            plt.xlabel('EndCap')
-            plt.title(f'Capacity by Resource in Zone {zone}')
-            plt.tight_layout()
-            filename = os.path.join(save_path, f'{sim_id}_Capacity_by_Resource_Zone_{zone}.png')
-            plt.savefig(filename, dpi=150)
-            plt.close()
-            print(f"Saved: {filename}")
+    pattern = "|".join(resources)
 
-            filename= os.path.join(save_path, f'{sim_id}_Capacity_by_Zone')
+    df["ResourceType"] = (
+        df["Resource"]
+        .str.lower()
+        .str.extract("(" + pattern + ")", expand=False)
+    )
+
+    # Wind
+    wind_df = df[df["ResourceType"] == "wind"]
+    # Gas
+    gas_df = df[df["ResourceType"] == "gas"]
+    # Hydro
+    hydro_df = df[df["ResourceType"] == "hydro"]
+    # Solar
+    solar_df = df[df["ResourceType"].isin(["utilitypv", "photovoltaic"])]
+    # Nuclear
+    nuclear_df = df[df["ResourceType"] == "nuclear"]
+    # Transmission
+    trans_df = df[df["ResourceType"] == "trans"]
+    # Biomass
+    biomass_df = df[df["ResourceType"] == "biomass"]
+    # Distributed
+    distributed_df = df[df["ResourceType"] == "distributed"]
+    # All other resources
+    other_df = df[~df["ResourceType"].isin(resources)]
+
+    start_cap = resource_df["StartCap"]
+    end_cap = resource_df["EndCap"]
+    cap_added = end - start
+
+    def plot_resource_capacity(resource_df, resource_name, x_axis_name):
+        x_axis = resource_df[x_axis_name]
+
+        plt.figure(figsize=fig_size)
+        plt.xlabel("Time")
+        plt.ylabel("Capacity (MW)")
+        plt.title(f"Capacity Over Time for {resource_name}")
+        plt.grid(False)
+
+        # Create tick positions and labels
+        x_labels = resource_df
+        x_positions = range(len(resource_df.index))[::24]  # numeric positions for ticks
+
+        plt.xticks(x_positions, x_labels, rotation=45)
+
+        plt.bar(
+            x=range(len(resource_df.index)),   # numeric x positions
+            height=x_axis,                     # y values
+            width=1.0,                         # bar width (adjust if needed)
+            label=x_axis_name
+        )
+
+        plt.legend()
+
+    
+    for resource_type in resource_types:
+        if resource_type == "Wind":
+            plot_resource_capacity(wind_df, "Wind", "EndCap")
+            filename= os.path.join(save_path, f'{sim_id}_Capacity_Wind')
             plt.savefig(filename, dpi = dpi)
             plt.close()
             print(f"Saved: {filename}")
-
-    else:
-        for zone in len(multiple_zones):
-            which_zone = multiple_zones[zone]
-            zone_df = df[df['Zone'] == which_zone]
-            plt.figure(figsize=(10, max(4, len(zone_df) * 0.15)))
-            plt.barh(zone_df['Resource'], zone_df['EndCap'], color='tab:blue')
-            plt.xlabel('EndCap')
-            plt.title(f'Capacity by Resource in Zone {zone}')
-            plt.tight_layout()
-            filename = os.path.join(save_path, f'{sim_id}_Capacity_by_Resource_Zone_{zone}.png')
-            plt.savefig(filename, dpi=150)
+        elif resource_type == "Gas":
+            plot_resource_capacity(gas_df, "Gas", "EndCap")
+            filename= os.path.join(save_path, f'{sim_id}_Capacity_Gas')
+            plt.savefig(filename, dpi = dpi)
             plt.close()
             print(f"Saved: {filename}")
-
-            
+        elif resource_type == "Hydro":
+            plot_resource_capacity(hydro_df, "Hydro", "EndCap")
+            filename= os.path.join(save_path, f'{sim_id}_Capacity_Hydro')
+            plt.savefig(filename, dpi = dpi)
+            plt.close()
+            print(f"Saved: {filename}")
+        elif resource_type == "Solar":
+            plot_resource_capacity(solar_df, "Solar", "EndCap")
+            filename= os.path.join(save_path, f'{sim_id}_Capacity_Solar')
+            plt.savefig(filename, dpi = dpi)
+            plt.close()
+            print(f"Saved: {filename}")
+        elif resource_type == "Nuclear":
+            plot_resource_capacity(nuclear_df, "Nuclear", "EndCap")
+            filename= os.path.join(save_path, f'{sim_id}_Capacity_Nuclear')
+            plt.savefig(filename, dpi = dpi)
+            plt.close()
+            print(f"Saved: {filename}")
+        elif resource_type == "Transmission":
+            plot_resource_capacity(trans_df, "Transmission", "EndCap")
+            filename= os.path.join(save_path, f'{sim_id}_Capacity_Transmission')
+            plt.savefig(filename, dpi = dpi)
+            plt.close()
+            print(f"Saved: {filename}")
+        elif resource_type == "Biomass":
+            plot_resource_capacity(biomass_df, "Biomass", "EndCap")
+            filename= os.path.join(save_path, f'{sim_id}_Capacity_Biomass')
+            plt.savefig(filename, dpi = dpi)
+            plt.close()
+            print(f"Saved: {filename}")
+        elif resource_type == "Distributed":
+            plot_resource_capacity(distributed_df, "Distributed", "EndCap")
+            filename= os.path.join(save_path, f'{sim_id}_Capacity_Distributed')
+            plt.savefig(filename, dpi = dpi)
+            plt.close()
+            print(f"Saved: {filename}")
