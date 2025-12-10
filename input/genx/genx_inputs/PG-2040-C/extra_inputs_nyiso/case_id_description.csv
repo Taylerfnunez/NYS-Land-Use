@@ -1,0 +1,11 @@
+﻿case_id,case_description
+s1,No Policy +Mid RE
+s4,70% ESR + 1GW nuclear + Mid  RE + Emissions cap
+s5,70% ESR + 1 GW nuclear +Mid RE
+s6,70% ESR + Mid  RE + Emissions cap
+s7,70% ESR + Mid RE 
+p1,No Policy + Low RE
+p4,70% ESR+ 1GW nuclear + low  RE + Emissions cap
+p5,70% ESR +1 GW nuclear + low RE
+p6,70% ESR + Low RE + Emissions cap
+p7,70% ESR + Low RE 
