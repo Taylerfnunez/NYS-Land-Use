@@ -1,0 +1,16 @@
+Fuel,AnnualSum
+No_fuel,0.0
+new_england_coal,4.803773759999999e7
+new_england_naturalgas,5.034206887892395e8
+new_england_uranium,2.712755200771029e8
+middle_atlantic_naturalgas,1.4199470877476468e9
+middle_atlantic_uranium,6.719794948799994e8
+middle_atlantic_coal,0.0
+east_north_central_coal,1.949637126824215e9
+east_north_central_naturalgas,9.253364187881954e8
+east_north_central_uranium,1.735115712624518e9
+new_england_naturalgas_ccs100,0.0
+middle_atlantic_naturalgas_ccs100,0.0
+east_north_central_naturalgas_ccs90,0.0
+east_north_central_naturalgas_ccs100,0.0
+None,0.0
