@@ -32,11 +32,13 @@ z_I = 3804
 z_J = 61
 z_K = 20732
 
+farmland = [z_A, z_B, z_C, z_D, z_E, z_F, z_G, z_H, z_I, z_J, z_K]
+
 total_farm = z_A + z_B + z_C + z_D + z_E + z_F + z_G + z_H + z_I + z_J + z_K
 print("Total Farmland Area (acres): ", total_farm)
 # 465556
 
-solar_density = 13 # acres per MW
+solar_density = 6.49 # acres per MW
 agvol_density = 15 # acres per MW
 
 # 640 acres in a square mile
@@ -65,18 +67,42 @@ agvol_dev_scenario_2 = 0.50
 agvol_dev_scenario_3 = 0.75
 agvol_dev_scenario_4 = 1.00
 
+#land_suitability_scenario
 
-
-def land_use_analysis(capacity_dataframe, land_suitability_scenario, agvol_share, zones):
+def land_use_analysis(capacity_dataframe, agvol_share, zones):
     capacity_to_develop = capacity_dataframe["NewCap"].sum()
-    total_land_needed = capacity_to_develop * solar_density
+    total_land_needed = capacity_to_develop * solar_density * (1-agvol_share)
     agvol_land_needed = total_land_needed * agvol_share * agvol_density
-    
+
     print("Total Land Needed (acres): ", total_land_needed)
     print("Agvol Land Needed (acres): ", agvol_land_needed)
 
-    if land_suitability_scenario == "base_case":
+    land_assign = pd.DataFrame()
+
+
+    # land per zone
+    for i in range(zones):
+        if capacity_dataframe["Zone"] == zones[i]:
+            
+            # capacity needed for each zone
+            mw_needed = land_assign[capacity_dataframe["Zone"] == zones[i]]["NewCap"].sum()
+            print("MW Needed in Zone ", zones[i], ": ", mw_needed)
+
+            # land needed for each zone
+            land_needed = mw_needed*(1- agvol_share) * solar_density + mw_needed * agvol_share * agvol_density
+            print("Land Needed in Zone ", zones[i], ": ", land_needed)
+
+            # if this were all to be on farmland - what percent of the farmland in the zone would be used
+            percent_farm_used = land_needed / farmland[i]
+            print("Percent of Farmland Used in Zone ", zones[i], ": ", percent_farm_used)
+
+
 
 
 
 # What percent of good land is farmland
+zones = [2,3,4,5,6,7,8,9]
+agvol_share = 0.25
+
+land_use_analysis(solar_df, agvol_share, zones)
+
