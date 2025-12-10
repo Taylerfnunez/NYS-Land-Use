@@ -1,6 +1,6 @@
-Voll,Demand_Segment,Cost_of_demand_curtailment_perMW,Max_demand_curtailment,$/MWh,Rep_Periods,Timesteps_per_Rep_Period,Sub_Weights,Time_Index,Demand_MW_z1,Demand_MW_z2,Demand_MW_z3,Demand_MW_z4,Demand_MW_z5,Demand_MW_z6,Demand_MW_z7,Demand_MW_z8,Demand_MW_z9,Demand_MW_z10,Demand_MW_z11
-9000.0,1.0,1.0,1.0,9000.0,1.0,8760.0,8760.0,1,11746,1017,770,1525,174,943,1678,6417,1992,14344,55119
-,2.0,0.067,0.075,603.0,,,,2,11060,967,732,1450,165,896,1595,6099,1894,13678,53502
+Voll,Demand_Segment,Cost_of_Demand_Curtailment_per_MW,Max_Demand_Curtailment,$/MWh,Rep_Periods,Timesteps_per_Rep_Period,Sub_Weights,Time_Index,Demand_MW_z1,Demand_MW_z2,Demand_MW_z3,Demand_MW_z4,Demand_MW_z5,Demand_MW_z6,Demand_MW_z7,Demand_MW_z8,Demand_MW_z9,Demand_MW_z10,Demand_MW_z11
+9000,1,1,1,9000,1,8760,8760,1,11746,1017,770,1525,174,943,1678,6417,1992,14344,55119
+,2,0.067,0.075,603,,,,2,11060,967,732,1450,165,896,1595,6099,1894,13678,53502
 ,,,,,,,,3,10493,923,699,1385,158,856,1524,5826,1810,13213,52353
 ,,,,,,,,4,10048,880,666,1320,151,816,1453,5551,1727,12996,51814
 ,,,,,,,,5,9824,850,644,1276,146,788,1404,5362,1669,12994,51840
