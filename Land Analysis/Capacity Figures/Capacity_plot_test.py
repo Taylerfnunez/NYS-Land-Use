@@ -67,14 +67,14 @@ def plot_resource_capacity(resource_df, resource_name, tech_types, zones, plot_a
     x_positions = list(range(len(to_plot)))
 
     # Data for bars
-    startcap = to_plot["StartCap"].values
+    #startcap = to_plot["StartCap"].values
     capbuilt = to_plot["NewCap"].values
     x_labels = to_plot["Resource"].values
 
     # Plot
     plt.figure(figsize=(10,5))
-    plt.bar(x_positions, startcap, label="StartCap")
-    plt.bar(x_positions, capbuilt, bottom=startcap, label="Capacity Built")
+    #plt.bar(x_positions, startcap, label="StartCap").       bottom=startcap,
+    plt.bar(x_positions, capbuilt, label="Capacity Built")
 
     # Align x-axis labels with bars
     plt.xticks(ticks=x_positions, labels=x_labels, rotation=45, ha="right")
@@ -88,8 +88,7 @@ def plot_resource_capacity(resource_df, resource_name, tech_types, zones, plot_a
     save_path = f"Land Analysis/Capacity Figures/capacity_{scenario_name}.png"   # <-- update this
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
 
-    plt.show()
-
+    #plt.show()
 
 
 def plot_retired_capacity(resource_df, resource_name, plot_aggregation, tech_types, zones):
@@ -130,24 +129,6 @@ def plot_retired_capacity(resource_df, resource_name, plot_aggregation, tech_typ
     plt.legend()
     plt.tight_layout()
     plt.show()
-
-# for resource_type in resources:
-#     if resource_type == "wind":
-#         plot_retired_capacity(wind_df, "Wind", plot_aggregation, tech_types, zones)
-#     elif resource_type == "gas":
-#         plot_retired_capacity(gas_df, "Gas", plot_aggregation, tech_types, zones)
-#     elif resource_type == "hydro":
-#         plot_retired_capacity(hydro_df, "Hydro", plot_aggregation, tech_types, zones)
-#     elif resource_type in ["utilitypv", "photovoltaic"]:
-#         plot_retired_capacity(solar_df, "Solar", plot_aggregation, tech_types, zones)
-#     elif resource_type == "nuclear":
-#         plot_retired_capacity(nuclear_df, "Nuclear", plot_aggregation, tech_types, zones)
-#     elif resource_type == "trans":
-#         plot_retired_capacity(trans_df, "Transmission", plot_aggregation, tech_types, zones)
-#     elif resource_type == "biomass":
-#         plot_retired_capacity(biomass_df, "Biomass", plot_aggregation, tech_types, zones)
-#     elif resource_type == "distributed":
-#         plot_retired_capacity(distributed_df, "Distributed", plot_aggregation, tech_types, zones)  
         
 
 for i in range(len(pathnames)):
@@ -161,3 +142,59 @@ for i in range(len(pathnames)):
     scenario = scenario_names[i]
 
     plot_resource_capacity(solar_data, resource_name, tech_types, zones, plot_aggregation, scenario)
+
+
+def plot_stacked_newcap(all_scenario_data, scenario_names, zones_to_include):
+
+    tech_order = ["solar", "wind", "gas", "hydro", "nuclear"]
+    df_list = []
+
+    for scenario_name, data in zip(scenario_names, all_scenario_data):
+        for tech in tech_order:
+            tech_df = data[tech]
+
+            # ---- NEW: filter by zones ----
+            if zones_to_include is not None:
+                tech_df = tech_df[tech_df["Zone"].isin(zones_to_include)]
+
+            # sum capacity for selected zones
+            newcap_val = tech_df["NewCap"].sum()
+
+            df_list.append({
+                "Scenario": scenario_name,
+                "Tech": tech,
+                "NewCap": newcap_val
+            })
+
+    df = pd.DataFrame(df_list)
+
+    # Pivot to wide format for plotting
+    pivot = df.pivot(index="Scenario", columns="Tech", values="NewCap").fillna(0)
+
+    # Plot
+    plt.figure(figsize=(12,6))
+    pivot.plot(kind="bar", stacked=True, figsize=(12,6))
+
+    plt.ylabel("Added Capacity (MW)")
+    plt.xlabel("Scenario")
+    plt.title("New Installed Capacity by Scenario")
+    plt.xticks(rotation=45, ha="right")
+    plt.legend(title="Generation Type")
+    plt.tight_layout()
+
+    save_path = "Land Analysis/Capacity Figures/NewCap_Bars.png"
+    plt.savefig(save_path, dpi=300, bbox_inches="tight")
+
+    # plt.show()
+
+
+# Collect data for all scenarios
+all_scenario_data = []
+
+for path in pathnames:
+    all_scenario_data.append(get_data_from_csv(path))
+
+zones = [2,3,4,5,6,7]
+
+# Create the stacked bar plot
+plot_stacked_newcap(all_scenario_data, scenario_names, zones)

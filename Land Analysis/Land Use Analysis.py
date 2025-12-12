@@ -28,7 +28,7 @@ def get_solar_dataframe(pathname):
         .str.extract("(" + pattern + ")", expand=False)
     )
 
-    solar_df = df[df["ResourceType"].isin(["utilitypv", "photovoltaic"])]
+    solar_df = df[df["ResourceType"].isin(["utilitypv"])]
 
     return solar_df
 
@@ -133,9 +133,14 @@ def land_use_analysis(capacity_dataframe, agvol_share, zones, zone_labels, scena
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
     #print(f"Figure saved to: {save_path}")
 
-    plt.show()
+    #plt.show()
 
 
+# How much land for each scenario
+def land_per_scenario(capacity_dataframe, solar_density):
+    land_needed = (capacity_dataframe["NewCap"].sum()) * solar_density
+    return land_needed
+    
 
 
 
@@ -147,8 +152,27 @@ zone_labels = ['Zone A', 'Zone B', 'Zone C&E', 'Zone D', 'Zone F', 'Zone G-I', '
 
 pathnames = [s1_path_2030, s2_path, s3_path, s1_path_2040, s4_path, s5_path, s6_path, s7_path]
 scenario_names = ['s1 2030', 's2', 's3', 's1 2040', 's4', 's5', 's6', 's7']
+land = []
 
 for i in range(len(pathnames)):
     solar_df = get_solar_dataframe(pathnames[i])
     land_use_analysis(solar_df, agvol_share, zones, zone_labels, scenario_names[i])
+    land_add = land_per_scenario(solar_df, solar_density)
+    land.append(land_add)
 
+print(land)
+
+#print(f"Land required for {scenario_name} is {land_needed} acres")
+
+plt.figure(figsize=(12,6))
+plt.bar(zones, land, label="Acres")
+plt.xticks(ticks=zones, labels=scenario_names, rotation=45, ha="right")
+plt.ylabel("Land Required (Acres)")
+plt.xlabel("Scenario")
+plt.title("Land Needed by Scenario")
+plt.xticks(rotation=45, ha="right")
+plt.legend(title="Generation Type")
+plt.tight_layout()
+
+save_path = "Land Analysis/Capacity Figures/Total_land_by_scenario.png"
+plt.savefig(save_path, dpi=300, bbox_inches="tight")
