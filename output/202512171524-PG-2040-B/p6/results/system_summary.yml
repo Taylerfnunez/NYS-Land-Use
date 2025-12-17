@@ -1,0 +1,9 @@
+ARCH: aarch64
+CPU_THREADS: 4
+JULIA_STDLIB: "/Users/tedwhite15/.julia/juliaup/julia-1.11.3+0.aarch64.apple.darwin14/share/julia/stdlib/v1.11"
+JULIA_VERSION: 1.11.3
+KERNEL: Darwin
+GENX_VERSION: 0.4.4
+MACHINE: "arm64-apple-darwin24.0.0"
+JIT: "ORCJIT"
+CPU_NAME: "apple-m2"
