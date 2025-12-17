@@ -3,16 +3,14 @@
 import pandas as pd
 import matplotlib.pyplot as plt
 
-s1_path_2030 = 'output/202512092100-PG-2030-B/s1/results/capacity.csv'
-s2_path = 'output/202512092100-PG-2030-B/s2/results/capacity.csv'
-s3_path = 'output/202512092100-PG-2030-B/s3/results/capacity.csv'
-s1_path_2040 = 'output/202512092232-PG-2040-B/s1/results/capacity.csv'
-s4_path = 'output/202512092232-PG-2040-B/s4/results/capacity.csv'
-s5_path = 'output/202512092232-PG-2040-B/s5/results/capacity.csv'
-s6_path = 'output/202512092232-PG-2040-B/s6/results/capacity.csv'
-s7_path = 'output/202512092232-PG-2040-B/s7/results/capacity.csv'
-
-
+s1_path_2030 = 'NYS-Land-Use/output/202512092100-PG-2030-B/s1/results/capacity.csv'
+s2_path = 'NYS-Land-Use/output/202512092100-PG-2030-B/s2/results/capacity.csv'
+s3_path = 'NYS-Land-Use/output/202512092100-PG-2030-B/s3/results/capacity.csv'
+s1_path_2040 = 'NYS-Land-Use/output/202512161939-PG-2040-B/s1/results/capacity.csv'
+s4_path = 'NYS-Land-Use/output/202512161939-PG-2040-B/s4/results/capacity.csv'
+s5_path = 'NYS-Land-Use/output/202512161939-PG-2040-B/s5/results/capacity.csv'
+s6_path = 'NYS-Land-Use/output/202512161939-PG-2040-B/s6/results/capacity.csv'
+s7_path = 'NYS-Land-Use/output/202512161939-PG-2040-B/s7/results/capacity.csv'
 
 def get_solar_dataframe(pathname):
     df = pd.read_csv(pathname)
@@ -129,7 +127,7 @@ def land_use_analysis(capacity_dataframe, agvol_share, zones, zone_labels, scena
     plt.legend()
     plt.tight_layout()
 
-    save_path = f"Land Analysis/Figures/land_use_{scenario_name}.png"   # <-- update this
+    save_path = f"NYS-Land-Use/Land Analysis/Figures/land_use_{scenario_name}.png"   # <-- update this
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
     #print(f"Figure saved to: {save_path}")
 
@@ -174,5 +172,5 @@ plt.xticks(rotation=45, ha="right")
 plt.legend(title="Generation Type")
 plt.tight_layout()
 
-save_path = "Land Analysis/Capacity Figures/Total_land_by_scenario.png"
+save_path = "NYS-Land-Use/Land Analysis/Capacity Figures/Total_land_by_scenario.png"
 plt.savefig(save_path, dpi=300, bbox_inches="tight")

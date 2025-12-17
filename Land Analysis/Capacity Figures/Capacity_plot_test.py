@@ -5,16 +5,21 @@ import os
 from pathlib import Path
 
 tech_types = ["hydro", "gas", "wind", "solar", "nuclear"]
-zones = [2,3,4,5,6,7]
+zones = [2,3,4,5,6,7,8,9]
 
-s1_path_2030 = 'output/202512092100-PG-2030-B/s1/results/capacity.csv'
-s2_path = 'output/202512092100-PG-2030-B/s2/results/capacity.csv'
-s3_path = 'output/202512092100-PG-2030-B/s3/results/capacity.csv'
-s1_path_2040 = 'output/202512092232-PG-2040-B/s1/results/capacity.csv'
-s4_path = 'output/202512092232-PG-2040-B/s4/results/capacity.csv'
-s5_path = 'output/202512092232-PG-2040-B/s5/results/capacity.csv'
-s6_path = 'output/202512092232-PG-2040-B/s6/results/capacity.csv'
-s7_path = 'output/202512092232-PG-2040-B/s7/results/capacity.csv'
+s1_path_2030 = 'NYS-Land-Use/output/202512092100-PG-2030-B/s1/results/capacity.csv'
+s2_path = 'NYS-Land-Use/output/202512092100-PG-2030-B/s2/results/capacity.csv'
+s3_path = 'NYS-Land-Use/output/202512092100-PG-2030-B/s3/results/capacity.csv'
+# s1_path_2040 = 'output/202512092232-PG-2040-B/s1/results/capacity.csv'
+# s4_path = 'output/202512092232-PG-2040-B/s4/results/capacity.csv'
+# s5_path = 'output/202512092232-PG-2040-B/s5/results/capacity.csv'
+# s6_path = 'output/202512092232-PG-2040-B/s6/results/capacity.csv'
+# s7_path = 'output/202512092232-PG-2040-B/s7/results/capacity.csv'
+s1_path_2040 = 'NYS-Land-Use/output/202512161939-PG-2040-B/s1/results/capacity.csv'
+s4_path = 'NYS-Land-Use/output/202512161939-PG-2040-B/s4/results/capacity.csv'
+s5_path = 'NYS-Land-Use/output/202512161939-PG-2040-B/s5/results/capacity.csv'
+s6_path = 'NYS-Land-Use/output/202512161939-PG-2040-B/s6/results/capacity.csv'
+s7_path = 'NYS-Land-Use/output/202512161939-PG-2040-B/s7/results/capacity.csv'
 
 pathnames = [s1_path_2030, s2_path, s3_path, s1_path_2040, s4_path, s5_path, s6_path, s7_path]
 scenario_names = ['s1 2030', 's2', 's3', 's1 2040', 's4', 's5', 's6', 's7']
@@ -25,7 +30,7 @@ plot_aggregation = 1
 def get_data_from_csv(pathname):
     capacity = pd.read_csv(pathname)
     df = capacity.copy()
-    resources = ["hydro", "gas", "wind", "utilitypv", "nuclear", "trans", "biomass", "distributed", "photovoltaic"]
+    resources = ["hydro", "gcf", "ccs", "wind", "utilitypv", "nuclear", "trans", "biomass", "distributed", "photovoltaic"]
 
     pattern = "|".join(resources)
 
@@ -37,9 +42,11 @@ def get_data_from_csv(pathname):
 
     data = {
         "wind": df[df["ResourceType"] == "wind"],
-        "gas": df[df["ResourceType"] == "gas"],
+        "gas": df[df["ResourceType"] == "gcf"],
+        "ccs": df[df["ResourceType"] == "ccs"],
         "hydro": df[df["ResourceType"] == "hydro"],
-        "solar": df[df["ResourceType"].isin(["utilitypv", "photovoltaic"])],
+        "solar": df[df["ResourceType"] == "utilitypv"],
+        "roof-top": df[df["ResourceType"] == "photovoltaic"],
         "nuclear": df[df["ResourceType"] == "nuclear"],
         "trans": df[df["ResourceType"] == "trans"],
         "biomass": df[df["ResourceType"] == "biomass"],
@@ -85,9 +92,9 @@ def plot_resource_capacity(resource_df, resource_name, tech_types, zones, plot_a
     plt.legend()
     plt.tight_layout()
 
-    save_path = f"Land Analysis/Capacity Figures/capacity_{scenario_name}.png"   # <-- update this
+    save_path = f"NYS-Land-Use/Land Analysis/Capacity Figures/capacity_{scenario_name}.png"   # <-- update this
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
-
+    
     #plt.show()
 
 
@@ -146,7 +153,16 @@ for i in range(len(pathnames)):
 
 def plot_stacked_newcap(all_scenario_data, scenario_names, zones_to_include):
 
-    tech_order = ["solar", "wind", "gas", "hydro", "nuclear"]
+    tech_order = ["ccs", "solar", "wind", "gas", "hydro", "nuclear", "roof-top"]
+    tech_colors = {
+    "ccs": "#5e8b23",        # gray
+    "solar": "#1f77b4",      # yellow
+    "wind": "#FDB813",       # blue
+    "gas": "#d62728",        # red
+    "hydro": "#2c9795",      # teal
+    "nuclear": "#9467bd",    # purple
+    "roof-top": "#6c5336"    # green
+}
     df_list = []
 
     for scenario_name, data in zip(scenario_names, all_scenario_data):
@@ -173,7 +189,7 @@ def plot_stacked_newcap(all_scenario_data, scenario_names, zones_to_include):
 
     # Plot
     plt.figure(figsize=(12,6))
-    pivot.plot(kind="bar", stacked=True, figsize=(12,6))
+    pivot.plot(kind="bar", stacked=True, figsize=(12,6), color=[tech_colors[t] for t in pivot.columns])
 
     plt.ylabel("Added Capacity (MW)")
     plt.xlabel("Scenario")
@@ -182,7 +198,7 @@ def plot_stacked_newcap(all_scenario_data, scenario_names, zones_to_include):
     plt.legend(title="Generation Type")
     plt.tight_layout()
 
-    save_path = "Land Analysis/Capacity Figures/NewCap_Bars.png"
+    save_path = "NYS-Land-Use/Land Analysis/Capacity Figures/NewCap_Bars.png"
     plt.savefig(save_path, dpi=300, bbox_inches="tight")
 
     # plt.show()
@@ -194,7 +210,7 @@ all_scenario_data = []
 for path in pathnames:
     all_scenario_data.append(get_data_from_csv(path))
 
-zones = [2,3,4,5,6,7]
+zones = [2,3,4,5,6,7,8,9]
 
 # Create the stacked bar plot
 plot_stacked_newcap(all_scenario_data, scenario_names, zones)
