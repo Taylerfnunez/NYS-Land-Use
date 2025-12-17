@@ -1,5 +1,5 @@
 {
-    "simulation_comments": "Rerun of PG-2040-B with corrected emissions cap",
+    "simulation_comments": "Rerun of PG-2040-B with C02Cap policy that excludes PJM and NENG",
     "run_genx": 1, 
     "genx_outputs_dir": "input/genx/genx_outputs/test1",
     "save_path": "output",
