@@ -19,13 +19,24 @@ def load_data(pathname):
     df = pd.read_csv(pathname)
 
 def economic_comparison(data):
-    total_cost = data.loc["Total"]
+    total_cost = data.loc[1, "Total"]
     return total_cost
 
 for i in range(len(pathnames)):
     df = pd.read_csv(pathnames[i])
     cost = economic_comparison(df)
     print (cost)
+
+plt.figure(figsize=(10,6))
+plt.bar(scenario_names, [economic_comparison(pd.read_csv(p)) for p in pathnames], color='green')
+plt.ylabel("Total System Cost ($)")
+plt.xlabel("Scenario")
+plt.title("Total System Cost by Scenario")
+plt.xticks(rotation=45, ha="right")
+plt.tight_layout()
+save_path = "NYS-Land-Use/Land Analysis/Economics Figures/Total_cost_by_scenario.png"
+plt.savefig(save_path, dpi=300, bbox_inches="tight")
+plt.show()
 
 
 

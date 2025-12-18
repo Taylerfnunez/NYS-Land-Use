@@ -2,6 +2,7 @@
 
 import pandas as pd
 import matplotlib.pyplot as plt
+import numpy as np
 
 s1_path_2030 = 'NYS-Land-Use/output/202512092100-PG-2030-B/s1/results/capacity.csv'
 s2_path = 'NYS-Land-Use/output/202512092100-PG-2030-B/s2/results/capacity.csv'
@@ -92,46 +93,71 @@ def land_use_analysis(capacity_dataframe, agvol_share, zones, zone_labels, scena
     print()
 
     percents_by_zone = []
+    capacity_by_zone = []   # <-- NEW
 
     for i in range(len(zones)):
         zone = zones[i]
 
-        # capacity needed for this zone
         mw_needed = capacity_dataframe.loc[
             capacity_dataframe["Zone"] == zone, "NewCap"
         ].sum()
 
-        print(f"MW Needed in Zone {zone}: {mw_needed}")
+        capacity_by_zone.append(mw_needed)   # <-- NEW
 
-        # land needed for this zone
         land_needed = (
             mw_needed * (1 - agvol_share) * solar_density +
             mw_needed * agvol_share * agvol_density
         )
 
-        print(f"Land Needed in Zone {zone}: {land_needed}")
-
         percent_farm_used = land_needed / farmland[i]
-        print(f"Percent of Farmland Used in Zone {zone}: {percent_farm_used}")
-        print("------------------------------------------")
         percents_by_zone.append(percent_farm_used)
 
-    
-    plt.figure(figsize=(10,5))
-
-    plt.bar(zones, percents_by_zone, label="Percent Farmland by Zone")
+    # --------- Plot 1: Percent Farmland Used ---------
+    plt.figure(figsize=(10, 5))
+    plt.bar(zones, percents_by_zone, color='green')
     plt.xticks(ticks=zones, labels=zone_labels, rotation=45, ha="right")
     plt.xlabel("Zone")
     plt.ylabel("Percent of Farmland Developed")
     plt.title(f"Land Used in Scenario {scenario_name}")
-    plt.legend()
     plt.tight_layout()
 
-    save_path = f"NYS-Land-Use/Land Analysis/Figures/land_use_{scenario_name}.png"   # <-- update this
-    plt.savefig(save_path, dpi=300, bbox_inches="tight")
-    #print(f"Figure saved to: {save_path}")
+    plt.savefig(
+        f"NYS-Land-Use/Land Analysis/Figures/land_use_{scenario_name}.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+    plt.close()
 
-    #plt.show()
+    # --------- Plot 2: Solar Capacity Needed ---------
+    plt.figure(figsize=(10, 5))
+    plt.bar(zones, capacity_by_zone, color='green')
+    plt.xticks(ticks=zones, labels=zone_labels, rotation=45, ha="right")
+    plt.xlabel("Zone")
+    plt.ylabel("Solar Capacity Needed (MW)")
+    plt.title(f"Solar Capacity by Zone – Scenario {scenario_name}")
+    plt.ylim(0, 24000)
+    plt.tight_layout()
+
+    plt.savefig(
+        f"NYS-Land-Use/Land Analysis/Figures/solar_capacity_{scenario_name}.png",
+        dpi=300,
+        bbox_inches="tight"
+    )
+    plt.close()
+
+def capacity_grouped_by_zone(capacity_dataframe, zones):
+    capacity_by_zone = []
+
+    for i in range(len(zones)):
+        zone = zones[i]
+
+        mw_needed = capacity_dataframe.loc[
+            capacity_dataframe["Zone"] == zone, "NewCap"
+        ].sum()
+
+        capacity_by_zone.append(mw_needed)
+
+    return capacity_by_zone
 
 
 # How much land for each scenario
@@ -151,12 +177,14 @@ zone_labels = ['Zone A', 'Zone B', 'Zone C&E', 'Zone D', 'Zone F', 'Zone G-I', '
 pathnames = [s1_path_2030, s2_path, s3_path, s1_path_2040, s4_path, s5_path, s6_path, s7_path]
 scenario_names = ['s1 2030', 's2', 's3', 's1 2040', 's4', 's5', 's6', 's7']
 land = []
+cap_by_zone = pd.DataFrame()
 
 for i in range(len(pathnames)):
     solar_df = get_solar_dataframe(pathnames[i])
     land_use_analysis(solar_df, agvol_share, zones, zone_labels, scenario_names[i])
     land_add = land_per_scenario(solar_df, solar_density)
     land.append(land_add)
+    cap_by_zone[f"{scenario_names[i]}"] = capacity_grouped_by_zone(solar_df, zones)
 
 print(land)
 
@@ -174,3 +202,130 @@ plt.tight_layout()
 
 save_path = "NYS-Land-Use/Land Analysis/Capacity Figures/Total_land_by_scenario.png"
 plt.savefig(save_path, dpi=300, bbox_inches="tight")
+
+
+###### Plot capacity by zone for each scenario ######
+
+bar_width = 0.10
+x = np.arange(len(zones))
+
+plt.figure(figsize=(14, 6))
+
+for i, scenario in enumerate(cap_by_zone.columns):
+    plt.bar(
+        x + i * bar_width,
+        cap_by_zone[scenario],
+        width=bar_width,
+        label=scenario
+    )
+
+# Center x-ticks
+plt.xticks(
+    x + bar_width * (len(cap_by_zone.columns) - 1) / 2,
+    zone_labels,
+    rotation=45,
+    ha="right"
+)
+
+plt.xlabel("Zone")
+plt.ylabel("Solar Capacity Needed (MW)")
+plt.title("Solar Capacity by Zone and Scenario")
+plt.ylim(0, 24000)
+plt.legend(title="Scenario", ncol=2)
+plt.tight_layout()
+
+save_path = "NYS-Land-Use/Land Analysis/Capacity Figures/solar_capacity_grouped_by_zone.png"
+plt.savefig(save_path, dpi=300, bbox_inches="tight")
+
+
+# ------- Table 1: Land Use Summary by Scenario -------
+agland_share = 0.5 # land that is agricultural
+agvol_share = 0.5 # percent of agricultural land that is used as agvol land
+
+
+# print(table_1)
+land_needed = []
+ag_land_needed = []
+agvol_land_needed = []
+number_of_farms = []
+
+for i in range(len(pathnames)):
+    solar_df = get_solar_dataframe(pathnames[i])
+
+    # capacity already handled
+    cap_by_zone[f"{scenario_names[i]}"] = capacity_grouped_by_zone(solar_df, zones)
+
+    total_capacity = solar_df["NewCap"].sum()
+
+    land_needed.append(
+        total_capacity * solar_density * (1 - agland_share)
+    )
+
+    ag_land_needed.append(
+        total_capacity * solar_density * (1 - agland_share) * (1 - agvol_share)
+    )
+
+    agvol_land_needed.append(
+        total_capacity * agvol_density * agland_share * agvol_share
+    )
+
+    number_of_farms.append(
+        (total_capacity * agvol_density * agvol_share) / 78
+    )
+
+
+number_of_farms = [5849, 2879, 7161+6632, 560, 4846, 2006+108, 52, 607]
+med_farm_size_per_zone = [64.375, 68.75, 84.5+102.8181818, 69.5, 73.90909091, 46.33333333+16, 0.6, 18.5]
+
+
+farm_specs = pd.DataFrame({
+    "Zones": zone_labels,
+    "Number of Farms": number_of_farms,
+    "Median Farm Size (acres)": med_farm_size_per_zone
+
+})
+
+
+def number_of_farms(capacity_by_zone, farm_size):
+    # capacity by zone is a list of capacities for each zone for a given scenario run
+    num_farms = 0
+
+    for i in range(len(capacity_by_zone)):
+        num_farms += (capacity_by_zone[i] * agvol_density * agvol_share * agland_share) / farm_size["Median Farm Size (acres)"][i]
+
+    return num_farms
+
+farms = []
+for i in range(len(pathnames)):
+    farms.append(
+        number_of_farms(
+            cap_by_zone[scenario_names[i]],
+            farm_size=farm_specs
+        )
+    )
+
+percent_of_farms = [
+    (farms[i] / 30650) * 100 for i in range(len(farms))
+]
+
+table_1 = pd.DataFrame({
+    "Scenario": scenario_names,
+    "Capacity Needed (MW)": [cap_by_zone[col].sum() for col in cap_by_zone.columns],
+    "Non-Agricultural Land Needed (acres)": land_needed,
+    "Agricultural Land Needed (acres)": ag_land_needed,
+    "Agvol Land Needed (acres)": agvol_land_needed,
+    "Number of Farms Converted to AgVol": farms,
+    "Percent of Farms Converted to AgVol (%)": percent_of_farms
+})
+
+table_1 = table_1.round(0).astype({
+    "Capacity Needed (MW)": int,
+    "Non-Agricultural Land Needed (acres)": int,
+    "Agricultural Land Needed (acres)": int,
+    "Agvol Land Needed (acres)": int,
+    "Number of Farms Converted to AgVol": int,
+    "Percent of Farms Converted to AgVol (%)": float
+})
+print(table_1)
+
+table_1.to_csv("NYS-Land-Use/Land Analysis/land_use_summary_by_scenario.csv", index=False)
