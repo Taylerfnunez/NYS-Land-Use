@@ -1,0 +1,9 @@
+Scenario,Capacity Needed (MW),Non-Agricultural Land Needed (acres),Agricultural Land Needed (acres),Agvol Land Needed (acres),Number of Farms Converted to AgVol,Percent of Farms Converted to AgVol (%)
+s1 2030,4173,90341,45170,81780,102,0.0
+s2,23992,206478,103239,186912,921,3.0
+s3,26017,232634,116317,210589,688,2.0
+s1 2040,7928,169507,84753,153444,234,1.0
+s4,40570,505156,252578,457287,1072,3.0
+s5,24626,241568,120784,218677,684,2.0
+s6,29054,362331,181165,327996,787,3.0
+s7,25635,227818,113909,206230,666,2.0
