@@ -1,5 +1,5 @@
 {
-  "simulation_name": "zhang_opinion_dynamics_demo",
+  "simulation_name": "erdos_renyi_3",
   "random_seed": 0,
   "d": 2,
   "k": 3,

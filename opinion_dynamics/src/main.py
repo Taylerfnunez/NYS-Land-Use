@@ -23,12 +23,19 @@ def load_json(path: Path) -> dict:
         return json.load(f)
 
 
-def create_run_dir(root: Path) -> Path:
+#def create_run_dir(root: Path) -> Path:
+#    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+ #   out_dir = root / "output" / timestamp
+ #   out_dir.mkdir(parents=True, exist_ok=False)
+ #   return out_dir
+
+
+def create_run_dir(root: Path, simulation_name: str) -> Path:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    out_dir = root / "output" / timestamp
+    folder_name = f"{simulation_name}_{timestamp}"
+    out_dir = root / "output" / folder_name
     out_dir.mkdir(parents=True, exist_ok=False)
     return out_dir
-
 
 def save_settings_copy(settings: dict, graph_cfg: dict, output_dir: Path) -> None:
     combined = {"settings": settings, "graph": graph_cfg}
@@ -65,7 +72,9 @@ def main() -> None:
     settings.setdefault("initial_condition", {})
     settings["initial_condition"].setdefault("k", settings["k"])
 
-    output_dir = create_run_dir(root)
+    simulation_name = settings["simulation_name"]
+
+    output_dir = create_run_dir(root, simulation_name)
     save_settings_copy(settings, graph_cfg, output_dir)
 
     G = build_graph_from_config(graph_cfg)
