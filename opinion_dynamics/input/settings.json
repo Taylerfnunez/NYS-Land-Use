@@ -1,8 +1,8 @@
 {
-  "simulation_name": "erdos_renyi_3",
+  "simulation_name": "path3_k1",
   "random_seed": 0,
   "d": 2,
-  "k": 3,
+  "k": 1,
   "t_start": 0.0,
   "t_end": 12.0,
   "num_time_points": 600,

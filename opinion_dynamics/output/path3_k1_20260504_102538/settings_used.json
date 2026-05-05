@@ -1,0 +1,33 @@
+{
+  "settings": {
+    "simulation_name": "path3_k1",
+    "random_seed": 0,
+    "d": 2,
+    "k": 1,
+    "t_start": 0.0,
+    "t_end": 12.0,
+    "num_time_points": 600,
+    "rtol": 1e-09,
+    "atol": 1e-09,
+    "initial_condition": {
+      "type": "random",
+      "noise": 0.05,
+      "k": 1
+    },
+    "plots": {
+      "plot_vector_components": true,
+      "plot_norms": true,
+      "plot_angles_if_d2": true,
+      "plot_circle_if_d2": true,
+      "plot_sphere_if_d3": true,
+      "dpi": 200
+    },
+    "save_solution_csv": true
+  },
+  "graph": {
+    "graph_type": "path",
+    "num_nodes": 3,
+    "weighted": false,
+    "edges": []
+  }
+}

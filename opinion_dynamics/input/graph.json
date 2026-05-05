@@ -1,5 +1,5 @@
 {
-  "graph_type": "erdos_renyi",
+  "graph_type": "path",
   "num_nodes": 3,
   "weighted": false,
   "edges": []
