@@ -106,25 +106,57 @@ def plot_angles_if_d2(sol_v, sol_theta, n: int, output_dir: Path, dpi: int = 200
     plt.close()
 
 
-def plot_circle_if_d2(sol_v, n: int, output_dir: Path, dpi: int = 200) -> None:
+#def plot_circle_if_d2(sol_v, n: int, output_dir: Path, dpi: int = 200) -> None:
+    # plt.figure(figsize=(6, 6))
+    # circle = np.linspace(0, 2 * np.pi, 400)
+    # plt.plot(np.cos(circle), np.sin(circle), "k-", alpha=0.35)
+    # for i in range(n):
+    #     x = sol_v.y[2 * i, :]
+    #     y = sol_v.y[2 * i + 1, :]
+    #     #plt.plot(x, y, label=f"node {i}")
+    #     #plt.scatter(x[0], y[0], marker="o", s=30)
+    #     #plt.scatter(x[-1], y[-1], marker="x", s=50)
+    #     line, = plt.plot(xi, yi, label=f"node {i}")
+    #     color = line.get_color()
+    #     plt.scatter([xi[0]], [yi[0]], marker="o", color=color)
+    #     plt.scatter([xi[-1]], [yi[-1]], marker="x", color=color)
+        
+    # plt.axis("equal")
+    # plt.xlabel("x")
+    # plt.ylabel("y")
+    # plt.title("Vector trajectories on unit circle")
+    # if n <= 12:
+    #     plt.legend(loc="best")
+    # plt.grid(True, alpha=0.3)
+    # plt.tight_layout()
+    # plt.savefig(output_dir / "circle_trajectories_d2.png", dpi=dpi)
+    # plt.close()
+
+
+def plot_circle_if_d2(sol_v, n, output_dir, dpi=300):
     plt.figure(figsize=(6, 6))
+
     circle = np.linspace(0, 2 * np.pi, 400)
-    plt.plot(np.cos(circle), np.sin(circle), "k-", alpha=0.35)
+    plt.plot(np.cos(circle), np.sin(circle), color="gray", alpha=0.5)
+
     for i in range(n):
-        x = sol_v.y[2 * i, :]
-        y = sol_v.y[2 * i + 1, :]
-        plt.plot(x, y, label=f"node {i}")
-        plt.scatter(x[0], y[0], marker="o", s=30)
-        plt.scatter(x[-1], y[-1], marker="x", s=50)
+        xi = sol_v.y[2 * i, :]
+        yi = sol_v.y[2 * i + 1, :]
+
+        line, = plt.plot(xi, yi, label=f"node {i}")
+        color = line.get_color()
+
+        plt.scatter([xi[0]], [yi[0]], marker="o", color=color, s=120)
+        plt.scatter([xi[-1]], [yi[-1]], marker="x", color=color, s=140)
+
     plt.axis("equal")
     plt.xlabel("x")
     plt.ylabel("y")
     plt.title("Vector trajectories on unit circle")
-    if n <= 12:
-        plt.legend(loc="best")
+    plt.legend()
     plt.grid(True, alpha=0.3)
-    plt.tight_layout()
-    plt.savefig(output_dir / "circle_trajectories_d2.png", dpi=dpi)
+
+    plt.savefig(output_dir / "circle_trajectories.png", dpi=dpi, bbox_inches="tight")
     plt.close()
 
 
